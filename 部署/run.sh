@@ -3,11 +3,15 @@
 set -u
 
 APP=/opt/wuhan-leads
-export PATH=/opt/node22/bin:$PATH
+# 自动选择 Node 24/22（dsh 的 bin 用 env node，必须把它放 PATH 最前）
+for d in /opt/node24 /opt/node22; do
+  if [ -x "$d/bin/dsh" ]; then export PATH="$d/bin:$PATH"; fi
+done
 cd "${APP}" || exit 1
 mkdir -p logs
 
-if [ -f .env ]; then set -a; . ./.env; set +a; fi
+if [ -f /etc/wuhan-leads.env ]; then set -a; . /etc/wuhan-leads.env; set +a; fi
+if [ -f "${APP}/.env" ]; then set -a; . "${APP}/.env"; set +a; fi
 if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
   echo "$(date '+%F %T') DEEPSEEK_API_KEY 未设置，跳过" >> logs/error.log
   exit 2
@@ -18,7 +22,7 @@ find logs -name 'run-*.log' -mtime +30 -delete 2>/dev/null || true
 
 echo "$(date '+%F %T') start" >> "${LOG}"
 dsh --profile headless --permission-mode workspace-write --approval-policy never \
-    < 部署/任务.txt >> "${LOG}" 2>&1
+    < "${APP}/部署/任务.txt" >> "${LOG}" 2>&1
 RC=$?
 
 # 刷新看板（Python 3.6 兼容）
@@ -27,8 +31,10 @@ if command -v python3 >/dev/null 2>&1; then
   [ -f 看板/index.html ] && cp 看板/index.html index.html
 fi
 
-# 推送（deploy key）
-export GIT_SSH_COMMAND="ssh -i /root/.ssh/wuhan_deploy -o IdentitiesOnly=yes"
+# 推送（deploy key：优先用仓库目录里的，其次 /root/.ssh/wuhan_deploy）
+KEY="${APP}/.ssh_deploy_key"
+[ -f "${KEY}" ] || KEY=/root/.ssh/wuhan_deploy
+export GIT_SSH_COMMAND="ssh -i ${KEY} -o IdentitiesOnly=yes -o UserKnownHostsFile=/root/.ssh/known_hosts"
 git add -A >> "${LOG}" 2>&1
 if ! git diff --cached --quiet; then
   git -c user.name="wuhan-leads-agent" -c user.email="agent@users.noreply.github.com" \

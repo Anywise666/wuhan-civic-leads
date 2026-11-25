@@ -3,3 +3,4 @@
 _acl-recovery/
 *.zip
 __pycache__/
+.ssh_*
