@@ -1,0 +1,14 @@
+[Unit]
+Description=Wuhan Leads collector (one-shot, triggered by timer)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/wuhan-leads
+Environment=PATH=/opt/node24/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EnvironmentFile=-/etc/wuhan-leads.env
+ExecStart=/bin/bash -c '/opt/node24/bin/dsh --profile headless --permission-mode workspace-write --approval-policy never "$(cat /opt/wuhan-leads/任务.txt)"'
+StandardOutput=append:/opt/wuhan-leads/logs/run.log
+StandardError=append:/opt/wuhan-leads/logs/error.log
+TimeoutStartSec=3600

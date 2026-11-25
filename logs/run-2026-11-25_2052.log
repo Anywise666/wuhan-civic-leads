@@ -1,0 +1,483 @@
+2026-11-25 20:52:41 start
+[llm-deepseek-api-key] model listing from https://api.deepseek.com/models loaded 2 model(s), skipped 0 row(s)
+dsh: reasoning:
+Let me read the source list, ledger, exclusions, and recent reports.
+dsh: reasoning:
+Let me see the rest of the ledger (fingerprints, statuses) and recent reports to understand what's been covered.
+dsh: reasoning:
+Now let me check the current date/time in the environment. The ledger suggests 2026-11-25. Let me check.
+
+Also check 报告/进度.md and logs for context on how past runs worked, especially fetch behavior.
+dsh: reasoning:
+Current time 2026-11-25 20:52 CST. Window: 2026-11-11 to 2026-11-25. Last run was 20:00, only ~52 min ago. This is the 21:00-ish run (next hourly? every 2 hours). Hmm, the previous run at 20:00 was 52 min ago, so likely this is an extra run. I need to do 12-18 calls and produce a report.
+
+Let me plan calls:
+1. Fetch wuhan.gov.cn/hdjl/lxgs/ (homepage)
+2. Fetch index_1
+3. Fetch index_2
+4. Fetch jyj lxgs
+5. Fetch zgj lxgs
+6. Fetch liuyan.cjn.cn
+7. People's leader message board or 12345 content
+8. Social complaint platform (heimao)
+9. Enterprise search 1
+10. Enterprise search 2
+
+Need to verify new items. Let's start with the official pages. web_fetch on these may work. Let me use bash curl? The tool web_fetch is intended but maybe it fails. Let's try web_fetch on the city page.
+
+I need 12-18 calls total. Careful budget. Each web_fetch/web_search = 1 call. Let me start with parallel fetches of the three city pages, jyj, zgj.
+
+Actually the report structure says "覆盖来源：N 个渠道". Let's go.
+
+First, fetch city homepage and index_1/index_2 in parallel.
+dsh: reasoning:
+City pages unchanged from 20:00 run — same 8+8+8 items. No new items. Good.
+
+Now fetch jyj and zgj. Also maybe the people's leader board and cjn. Let's do 3 in parallel: jyj, zgj, liuyan.cjn.cn.
+
+That's 6 calls so far. Note details pages count as calls too if needed for status evidence. Budget 12-18.
+
+Let me fetch jyj, zgj, and liuyan.cjn.cn.
+dsh: reasoning:
+As expected: jyj latest 2026-10-21 (no new), zgj latest 2026-10-28 (no new). liuyan.cjn.cn only returns site title (front-end rendering).
+
+So 6 calls used: 3 city pages, jyj, zgj, cjn homepage.
+
+Now need:
+- 武汉城市留言板 new items via web_search
+- People's leader message board
+- Social complaint platform (heimao)
+- Enterprise search x2
+
+Since last run was 52 min ago and already covered 34 items, likely 0 or few new. But need to search for new cjn messages posted 2026-11-25 evening.
+
+Let me do web_search with several queries in one call (web_search accepts up to 10 queries, merged results). Each web_search call counts as 1 of my 12-18 calls? The instruction says "12–18 次调用" — likely tool calls. I'll count calls.
+
+Let me do one web_search with cjn-focused queries:
+- site:liuyan.cjn.cn 2026年11月25日 投诉
+- site:liuyan.cjn.cn 11月25日 小区
+- site:liuyan.cjn.cn 办理中 11月25日
+
+Then another search for people's board and heimao.
+
+Actually let me structure:
+Call 7: web_search cjn new items (3 queries)
+Call 8: web_fetch people.com.cn thread list or web_search
+Call 9: web_search heimao
+Call 10-11: enterprise searches
+Then verify detail pages.
+
+Let me search cjn with targeted date queries.
+dsh: reasoning:
+Found new cjn items in window:
+- 4114438 左岭大道桥下辅路绿化遮挡视线 (2026-11-25 08:50:57) — new, not in ledger
+- 4114700 武汉光谷国际广场门口地面砖破损严重 (2026-11-25 12:09:58) — new
+- 4114907 江汉关轮渡应该配合旅游提升改造 (2026-11-25 15:54:12) — "留言板正在办理中" but it's a suggestion, likely 不属于范围 (纯建议)
+- 4110074 江夏美的君兰半岛底商京东养车破坏人车分流 (2026-11-20 12:33) — new, not in ledger
+
+Those are 3 good candidates, but I need to verify details/status by fetching each detail page. But known: web_fetch cjn detail pages returns only site title. Search snippets give the content. Per rules, B-level acceptable with note.
+
+Need also people's board — the 26537865 already in 待核 from prior run, status unchanged (published 11-04, beyond 14 days). I should maybe fetch the mobilelist page to check new items. Let me do that as a call (needed for 人民网 coverage). The search returned "五号线地铁吃东西 待回复", "建议重罚人行道..." — suggestions not in scope. Let me fetch the mobilelist to see the latest 10 items and dates.
+
+Also social platform: heimao search. And enterprise searches x2.
+
+Budget so far: 8 calls. Remaining 4-10.
+
+Plan:
+9. web_fetch http://liuyan.people.com.cn/threads/mobilelist?fid=1170
+10. web_search heimao 武汉 2026年11月 投诉 (1 call, 2 queries)
+11. web_search 涉企专项 (2 queries: 拖欠工程款/补贴未兑现) — that's one call but requirement "涉企专项检索 2 条" means 2 search strings; can be in one call with 2 queries, but maybe safer separate 2 calls.
+12-14. verify detail pages 4114438, 4114700, 4110074 (3 calls) — total ~15.
+
+Wait, cjn detail pages only return title. Still worth attempting at least one to confirm. In prior run they said detail returns only title. Could use search snippets as source. But rule says give original link — we have links. Verify level B with note.
+
+Let me combine: fetch people list, heimao search, enterprise search now in parallel (3 calls).
+dsh: reasoning:
+Calls so far: 11.
+
+New heimao candidates:
+- 17403026485 菜鸟驿站江汉湾一号店态度恶劣，动手（2026-11-19）— 民生, but "员工动手我报警" — involves police, still consumer complaint. Is it a public service complaint? Possibly 诉求: 投诉驿站. Not clearly 未办结. It's within 14 days. Hmm.
+- 17403117282 武汉先晟谨恩科技有限公司 客服没回复 (unknown date) — enterprise? Consumer complaint.
+- 17403101639 武汉无遗婚恋服务 2079元 退款 (2026-11-23) — consumer complaint, 民生. New.
+- 17403075687 闲鱼平台客服不作为 (2026-11-21, 武汉大悦城火锅) — platform issue, not Wuhan entity really.
+- 17403118718 和润嘉 99元 — already in 待核 from prior report.
+
+Need to check details. But black cat detail pages 404. Search snippets give enough for B.
+
+The key requirement: social platform coverage — at least 1. We have candidates. I can add 1-2 new heimao items (婚恋服务退款 17403101639, 菜鸟驿站 17403026485) if verifiable from snippet. But confidence: snippets only → B/medium; per rules low if only 转述/截图. Snippet is search收录 of original page, acceptable B per prior runs.
+
+However, I must be careful not to over-collect marginal items. The instruction says 0 is acceptable, no padding. Quality over quantity.
+
+Enterprise search: jxj.wuhan.gov.cn "武衡设备制造公司改制 生活费、医药费、职工住房补贴久拖不决" — that's an enterprise-related complaint published on 市经信局 互动交流 (jzxx view). This could be an 涉企/企业诉求 item. But is it within 14 days? Unknown date. The URL metadataid=66226. Need to check. It mentions 武汉市武衡设备制造公司改制过程中... 职工权益. That's more 企业改制遗留/职工权益, arguably 涉企. But date unknown. Let me fetch that page to get date and content — that's an A-level official source and could satisfy 涉企专项 with a real item.
+
+Also check 12: fetch jxj page. Then verify cjn details.
+
+Budget: 11 used. Remaining ~7. Plan:
+12. fetch jxj 武衡 page (enterprise candidate, A-level)
+13. fetch cjn 4114438
+14. fetch cjn 4114700
+15. fetch cjn 4110074
+16. maybe fetch cjn 4114907 (轮渡建议 - likely exclude as 纯建议)
+17. heimao 17403101639 detail attempt
+
+That's 17-18. Hmm tight but within 12-18. Let me do 12-15 in parallel (4 calls), then decide.
+
+Actually cjn detail pages return only title, so they're wasted except confirming existence. But rule requires 打开原文; level B noted. In prior runs they did direct 404 for heimao. Let me try one cjn detail to see if behavior changed and use search snippets for others.
+
+Let me do: fetch jxj page + fetch cjn 4114438 + fetch cjn 4114700 (3 calls = 14 total).
+dsh: reasoning:
+jxj page: content is JS-rendered (empty). So no date. Can't include (no published date, no body). Put in 待核: 武衡设备制造公司改制遗留 — 页面正文前端渲染，日期与答复状态不可读.
+
+cjn details: only title. So B-level with search snippets.
+
+Calls: 14.
+
+Now I need to decide items to add. From search snippets:
+
+1. 4114438 左岭大道桥下辅路与武九小路交汇处绿化遮挡视线，有安全隐患 — 2026-11-25 08:50:57 — 手机用户-166125215625**** — content: 绿化严重遮挡视线，左转车辆与直行车辆完全看不到对面情况，希望相关部门到现场核实，去掉这地方绿化. Status: unknown; snippet doesn't show reply. Need status evidence. If no reply visible → 未办结 with evidence "检索收录页仅见诉求正文，未见办理回复". That matches prior practice.
+
+2. 4114700 武汉光谷国际广场门口地面砖破损严重 — 2026-11-25 12:09:58 — 手机用户-179557979644**** — 地砖破损，人流量及电动车出入多，长期无人打理，易崴脚. Status 未办结.
+
+3. 4110074 江夏美的君兰半岛底商"京东养车"门店破坏小区人车分流 — 2026-11-20 12:33:44 — 手机用户-167886676269**** — need more content. Snippet only title. Could include with summary limited to title-level, but summary needs substance. Better verify with another search or put in 待核. Hmm, title itself is fairly specific: 底商京东养车门店破坏小区人车分流. But no details of诉求. Rule: 信息只有标题/摘要 → 等级 B 可入库 if 摘要有内容; prior runs did similar. But better to do one more search targeting tid 4110074 to get snippet.
+
+4. 4114907 江汉关轮渡应配合旅游提升改造 — 纯建议, 不属于范围 → 不纳入清单.
+
+5. Maybe new items from heimao: 17403101639 婚恋服务退款 2079元 (2026-11-23 22:56) — 武汉无遗婚恋服务. That's 民生消费. Status: no merchant reply visible. This is a valid lead. And 17403026485 菜鸟驿站 (2026-11-19) — 服务态度+肢体冲突, already报警; could be 治安, not really 民生诉求. Skip.
+
+Let me do one more search targeting 4110074 and heimao 17403101639 to get content. That's 1 call (web_search with 2 queries) = 15.
+
+Then maybe 1 more call to verify 4110074 via threads URL? Search.
+
+After that, write report and ledger.
+
+Let me think about what counts as "新增". Realistically I found:
+- 4114438 (new, 11-25)
+- 4114700 (new, 11-25)
+- 4110074 (new, 11-20)
+- heimao 17403101639 (new, 11-23)
+
+Possibly 4114907 excluded (建议).
+
+That's 4 new. Is 4114438 绿化遮挡 a 民生诉求? Yes, public safety/road view obstruction. 4114700 地砖破损 yes. 4110074 人车分流 dispute yes.
+
+Need to ensure these aren't already in ledger. Fingerprints list: cjn:4113735, 4112175, 4114650, 4114528, 4111134, 4109960, 4101947, 4113557, 4113834, 4114604, 4114788, 4114838, 4114480, 4112425, 4113494, 4112295, 4113544. None of 4114438, 4114700, 4110074. Good.
+
+heimao existing: 17402137678, 17403088866, 17403107681, 17403123691, 17403095839. New 17403101639 not there.
+
+Now, status evidence for each. Rules: "状态依据：引用判定所依据的原句（≤50字）". For no reply, evidence = "检索收录页仅见诉求正文，未见办理回复（留言时间 2026-11-25 08:50）". That's the objective missing basis.
+
+For heimao 17403101639: snippet: "机灵喵 发布于 2026年11月23日 22:56 ... 我在2026年11月17日在快手平台接触这个婚姻挽回公司 先交付79元与我通话..." Need more: 2079元. Title says 2079元婚恋服务费打水漂，武汉无遗婚恋服务欺骗客户该退款.
+
+Let me search details for these two (1 call = 15). Also perhaps search site:liuyan.cjn.cn 4110074.
+
+I'll use web_search with 3 queries:
+- "tid=4110074" 
+- "武汉无遗婚恋 黑猫 2079"
+- maybe "site:liuyan.cjn.cn 2026年11月25日 办理中" to find replies/status changes.
+
+Let me do that.
+dsh: reasoning:
+Good. 4110074 details:
+"美的君兰半岛底商'京东养车'门店35栋101-107破坏小区人车分流。一、装修期间已发生的违法事实 该门店在装修期间，擅自拆除小区人车分流行人隔离桩，侵占盲道、非机动车道和行人车道，破坏市政花坛及人行通道路砖，导致小区居民人行通道通行安全受到直接影响。上述行为涉嫌违反《城市道路管理条例》关于禁止擅自占用..."
+
+Note "35栋101-107" — 房号/商铺号. Rule: 投诉对象（企业、小区）可实名; 住址 only 小区/街道, 商铺号 is 投诉对象 location, not complainant's residence. But rule "不录身份证、房号、住址" — that's for complainant. For 投诉对象, it's a shop address; could keep as "35栋底商" without unit numbers to be safe. I'll write "小区35栋底商" and not list 101-107.
+
+heimao 17403101639: "我在2026年11月17日在快手平台接触这个婚姻挽回公司 先交付79元与我通话 ... 需要交2000元十天时间帮我挽回老婆..." Title says 2079元. So summary: 通过快手接触武汉无遗婚恋服务有限公司，先付79元通话，再付2000元，共2079元，对方承诺10天挽回婚姻，投诉称欺骗、要求退款. Need to be careful: snippet truncates. Summary: "投诉人称2026-11-17通过快手接触该公司，先付79元通话费，后被要求交2000元、承诺10天挽回婚姻；共2079元，认为服务欺骗、要求退款。" Status: 未处理 — no merchant response visible.
+
+Wait, is the total 2079 = 79+2000. Yes exactly. Good.
+
+Now status for cjn items: For 4114438, 4114700, 4110074 — snippet shows no reply. But 4110074 published 11-20, 5 days ago; likely may have reply by now. Search snippet shows only complaint text, no "办理回复". Set 未办结 with evidence noting page excerpt shows no reply. Confidence 中.
+
+Hmm, but is 4114438 a "诉求" with clear object? 绿化遮挡视线, 希望相关部门核实去掉绿化 — yes.
+
+4114700 地砖破损, "长期无人打理" — 诉求 implied repair. Fine.
+
+Now also consider status updates for existing items: I only re-checked city pages (unchanged). No status changes. I could skip detailed re-verification due to 52-min gap, and state in report. But rules want 在库复核. I'll list in a compact table that official pages unchanged, and prior statuses retained. Since only 52 min since last run, a brief 复核 is acceptable.
+
+Wait — the 20:00 report says 34 items and 6 reports. This run at 20:52 — the timer is every 2 hours (18:00, 20:00, 22:00). Why is there a run at 20:52? Maybe the scheduling of this task. Anyway.
+
+Now check: any new items on city gov pages? No — same list. jyj/zgj no. People's board: mobilelist returns only title; search shows 26537865 (already 待核, over window). Enterprise: only jxj JS-rendered item (no date) and policy announcements, plus 3亿工程款 case (not Wuhan-specific public institution? 人大代表追讨3亿工程款 - 湖北高院, not 武汉民生/涉企 local administrative request; skip).
+
+So new = 4: 4114438, 4114700, 4110074 (民生), heimao 17403101639 (民生/消费). 涉企 0 again (4th consecutive). Hmm, task requires "涉企专项检索 2 条" — done (2 queries + 1 fetch). Report 0 涉企 honestly.
+
+Should I include 菜鸟驿站 17403026485? It's a service attitude + physical altercation, already police involved → 治安/消费混合, 诉求 unclear. Skip; could mention 不纳入.
+
+Now numbering: WH-20261125-035 through 038.
+
+Wait: if 4 new, IDs 035-038.
+
+Need to build JSON lines with fields per schema. published_at with time where known:
+- 4114438: 2026-11-25T08:50:57+08:00
+- 4114700: 2026-11-25T12:09:58+08:00
+- 4110074: 2026-11-20T12:33:44+08:00
+- heimao: 2026-11-23T22:56:00+08:00
+
+Channel: 武汉城市留言板·各区(功能区) for cjn; 黑猫投诉 for heimao.
+source_url: use the URL from snippets: fiveblockviewxq for 4114438/4114700; threads/content for 4110074; hb.tousu... for heimao? The snippet URL is https://hlj.tousu.sina.com.cn/complaint/view/17403101639/... Better canonical: https://tousu.sina.com.cn/complaint/view/17403101639/ (prior ledger used tousu.sina.com.cn). Use https://tousu.sina.com.cn/complaint/view/17403101639/.
+
+source_title: "留言板-各区(功能区)-武汉城市留言板"; heimao: "2079元婚恋服务费打水漂，武汉无遗婚恋服务欺骗客户该退款_黑猫投诉_新浪网".
+
+complainant: 手机用户-166125215625**** (原页脱敏账号) etc. For heimao: 黑猫投诉用户"机灵喵"（平台昵称，非实名）.
+
+handler: 原文未载 for all (4110074 投诉对象 京东养车门店/物业? Original mentions 门店 and possibly 物业; handler not stated). Keep 原文未载.
+
+status_evidence ≤50 chars, quote. For no-reply: "检索收录页仅见诉求正文，未见部门办理回复". That's 22 chars. Good; basis is absence, not a quote. Rules allow "客观缺失".
+
+verify_level B, confidence 中, notes: "正文前端渲染，凭搜索收录摘要记录，需人工复核" (for cjn); heimao "详情页直连404，凭搜索收录摘要记录，需人工复核".
+
+status_history: [].
+
+Now, before writing, check totals and the last IDs. Ledger has 34 lines. I'll append 4.
+
+Report path: 报告/2026-11-25_2052.md (current time 20:52). Report structure per section 8.
+
+Also 剔除: none this period. 待核: 
+- jxj 武衡设备制造公司改制遗留（metadataid=66226）: 页面正文前端渲染，日期/答复状态不可读，无法确认窗口 → 待核
+- 人民网 26537865 (existing 待核, still over window; mention)
+- 4114907 江汉关轮渡提升改造: 纯建议 → 不纳入 (not 待核)
+- 菜鸟驿站 17403026485: 已报警，诉求不明 → 不纳入 maybe.
+- 4112340 / 4101514 from prior 待核 — unresolved? Could carry forward. Mention still pending.
+
+Report must include "在库复核" — do a compact table of 34 items? Prior report had 27 rows. For this run, I'll do a summary table by source + note statuses unchanged, maybe list all 34 briefly? That's long but "在库复核" expects. I can list grouped: 市政府来信公示 12 条 (005-016), cjn 17 条, heimao 5 条, with counts and verification method. But rules report structure has "二、状态更新（往期线索）" table. I'll title it "二、在库复核与状态更新" and include a table of key rechecked ones + statement none changed. To satisfy "在库复核", list all 34 IDs with status unchanged in a compact table? That's 34 rows; acceptable but heavy. I'll do a compact 4-column table for all 34 — reasonable and auditable. Actually maybe group rows: each row one item, short title, status, 核验方式. That's fine.
+
+Hmm, token/time budget: fine.
+
+But be honest: I did not individually re-fetch all 34. The city pages were re-fetched (covers 005-016 statuses unchanged, as page listing shows same dates). For cjn/heimao items I did not re-verify individually — only a general search. Report should state: "在库 cjn/黑猫条目本期未逐条重抓（距上期 52 分钟），维持上期核验状态，未推定办结". That's honest.
+
+Let me now also double check whether 4114438 etc. might have replies in snippet. For 4114438 snippet: "左岭大道，跨越武九线铁路的高架桥下，辅路与武九小路交汇处绿化严重遮挡视线，左转车辆与直行车辆完全看不到对面情况，希望相关部门到现场核实。去掉这地方绿化..." — no reply. For 4114700: no reply. For 4110074: long complaint text, no reply.
+
+One consideration: Should these be "未办结" or "处理中"? No reply visible → 未办结 (page no reply). Good.
+
+Now writing files. Let me construct JSON carefully with Python to ensure valid JSONL, appending only.
+
+Before writing, get exact current ledger line count and tail to confirm no edits (34 lines). Then append 4. Also exclusion file unchanged (2 lines) — no append this period. Task says 剔除事项追加 — none, fine.
+
+Let me write the 4 JSON lines via python with ensure_ascii=False, then report file.
+
+Also should update 数据/线索台账.csv and 台账汇总.md? Not required by task. Task says only jsonl + report + exclusions. Skip (tools 生成看板 may handle; but no git commands).
+
+Let me draft the JSON entries.
+
+1)
+id WH-20261125-035
+first_seen 2026-11-25T20:52:00+08:00
+last_verified same
+category 民生
+title "左岭大道高架桥下辅路绿化遮挡视线，转弯车辆看不到对向车流"
+summary "投诉人称左岭大道跨武九线铁路高架桥下，辅路与武九小路交汇处绿化严重遮挡视线，左转车辆与直行车辆完全看不到对面情况，存在安全隐患；希望相关部门到现场核实并移除该处绿化。"
+complainant "手机用户-166125215625****（原页脱敏账号）"
+channel "武汉城市留言板·各区(功能区)"
+channel_url "https://liuyan.cjn.cn/fiveblockviewxq?tid=4114438"
+ref_no "4114438"
+published_at "2026-11-25T08:50:57+08:00"
+handler "原文未载"
+status "未办结"
+status_evidence "检索收录页仅见诉求正文，未见部门办理回复"  (24 chars)
+source_url same
+source_title "留言板-各区(功能区)-武汉城市留言板"
+verify_level "B"
+confidence "中"
+fingerprint "cjn:4114438"
+mirrors []
+notes "正文前端渲染，详情页仅返回站点标题；凭搜索收录摘要记录，需人工复核原页回复"
+status_history []
+
+2)
+036 光谷国际广场门口地砖大面积破损
+summary "投诉人称武汉光谷国际广场门口大面积地砖破损严重，人流量及电动车出入多，长期无人打理，行人稍不注意易崴脚，希望相关部门处理。"
+complainant 手机用户-179557979644****
+published 2026-11-25T12:09:58+08:00
+rest similar; url fiveblockviewxq?tid=4114700
+
+3)
+037 江夏美的君兰半岛底商京东养车门店被指破坏人车分流
+summary "投诉人称江夏区美的君兰半岛35栋底商“京东养车”门店在装修期间擅自拆除小区人车分流行人隔离桩，侵占盲道、非机动车道和行人车道，破坏市政花坛及人行通道路砖，居民通行安全受到直接影响；并称涉嫌违反《城市道路管理条例》关于禁止擅自占用道路的规定。"
+Hmm summary ≤150字. Count: ~120. OK.
+complainant 手机用户-167886676269****
+published 2026-11-20T12:33:44+08:00
+url threads/content?tid=4110074
+title "江夏美的君兰半岛底商“京东养车”门店被指破坏人车分流"
+notes mention 原文列出具体商铺号，已略去；正文前端渲染...
+
+4)
+038 武汉无遗婚恋服务被指以挽回婚姻为名收费2079元，要求退款
+summary "投诉人称2026-11-17通过快手接触武汉无遗婚恋服务有限公司，先付79元通话，对方称交2000元可在10天内帮其挽回婚姻；共支付2079元后认为服务存在欺骗，要求退款。"
+Wait snippet: "先交付79元与我通话 趁机...说让老师给我出挽回反感帮我挽回老婆 需要交2000元十天时间帮我挽回老婆". So 2000 + 79 = 2079. Title asserts 2079元. Good.
+complainant 黑猫投诉用户“机灵喵”（平台昵称，非实名）
+channel 黑猫投诉
+channel_url https://tousu.sina.com.cn/complaint/view/17403101639/
+ref_no 17403101639
+published 2026-11-23T22:56:00+08:00
+handler 原文未载（被投诉对象：武汉无遗婚恋服务有限公司）
+status 未处理
+status_evidence "检索收录页仅见投诉正文，未见商家回复或平台处理结论"
+source_title "2079元婚恋服务费打水漂，武汉无遗婚恋服务欺骗客户该退款_黑猫投诉_新浪网"
+notes "详情页直连404，凭搜索收录摘要记录，需人工复核；同公司2026-04另有3079元同类投诉（17395749085），是否同一模式待核"
+
+Hmm, mentioning 17395749085 in notes is unverified second item — fine as note, sourced from search snippet. But "不编造" — it's real from search. Could omit to keep clean. I'll include as 备注? Better omit to avoid clutter. Actually it's useful pattern evidence but not verified date beyond snippet "本人于2026年4月". I'll omit.
+
+Status "未处理" matches heimao convention in ledger.
+
+Now write Python script.
+
+Then report. Let me compute: 新增 4, 状态更新 0, 剔除 0, 待核 3 (武衡, 人民网26537865, 菜鸟驿站?) Let me count 待核 as carried-over + new. I'll list:
+1. 市经信局局长信箱“武衡设备制造公司改制遗留”（metadataid=66226）— 正文/日期/答复状态前端渲染不可读 → 需人工在浏览器核对发布日期，超窗则不追。
+2. 人民网 26537865（11-04，已转办“办理中”）— 正文仅办理机构可见，超14天窗口，仅状态更新时纳入。carried.
+3. 城市留言板 4101514（江鲜渔乐储值余额）— 发布时间仍不明。carried.
+4. 城市留言板 4112340（石墩围路）— 路段不明。carried.
+5. 黑猫 17403118718（和润嘉99元）— 属地/诉求不完整。carried.
+Maybe also 菜鸟驿站 17403026485 → 不纳入清单 (已报警，行政诉求不明).
+
+So 待核 5 条（4 条结转 + 1 条新）.
+
+Source coverage: 6 channels: 市政府来信公示 (3 pages), 市教育局, 市住建局, 武汉城市留言板, 人民网领导留言板, 黑猫投诉 + 市经信局局长信箱 (涉企). That's 7 entries, 6 required categories.
+
+Calls total: 3+3+2+3+3+1 = 15 web calls. Within 12-18. Good.
+
+Let me write files now.
+dsh: reasoning:
+Now write report. Need all sections. Let me draft carefully.
+
+Report filename: 2026-11-25_2052.md
+
+Header:
+- 运行时间 2026-11-25 20:52
+- 窗口 2026-11-11 至 2026-11-25
+- 覆盖来源：6 个必查渠道 + 市经信局涉企栏目（7 个入口）
+- 结果：新增 4 / 状态更新 0 / 剔除 0 / 待核 5（新1+结转4）
+- 累计 38
+
+新增条目 detail per format.
+
+在库复核: 34 条 before this run. Compact table. I'll write grouped:
+- 市政府来信公示 005–016 (12): 三页重抓，条目与回复时间与 20:00 期一致，无变化.
+- 城市留言板 001–003, 017–025, 028–032 (17): 仅检索复核，未逐条重抓，状态维持.
+Wait 028-032 are in ledger from prior run (yes 5 items). Count cjn: 001,002,003,017,018,019,020,021,022,023,024,025,028,029,030,031,032 = 17.
+- 黑猫 004,026,027,033,034 = 5.
+12+17+5 = 34. Good.
+
+Maybe table listing all 34 is overkill; do 3 grouped rows plus a "本次重点复核" mini-table for items with time-sensitive status? The structure example has a table of 编号/标题/状态变化/依据/链接. I'll provide a table of the 12 government items (since re-fetched) and note the rest grouped. Hmm, "在库复核" section should show work done. I'll list all 34 in a compact table? That's a lot of text but demonstrates completeness. Let me do a compact table with 编号 | 状态（未变） | 本次核验方式, titles abbreviated maybe 8-12 chars. 34 rows ~ manageable.
+
+Actually to keep quality and not bloat, I'll do table of all 34 with short title, status, verification. Fine.
+
+Verification methods:
+005-016: "来信公示三页重抓，条目/回复时间未变"
+001-003,017-025,028-032: "检索复核，未见新回复" (for 018/020 etc. state no new)
+004,026,027,033,034: "黑猫原页/检索复核，无新处理"
+
+For 001/003 etc I didn't search each specifically this run. Honesty: "距上期 52 分钟，沿用上期核验，未推定办结". I'll have a column "本次核验" with "未重抓（间隔52分钟），维持" for some. But that weakens. I did run a general cjn search that surfaced 4112175 and 4112295 with same snippets, confirming no change for those two. Others not.
+
+I'll write: "在库 cjn/黑猫条目本期未逐条重抓（距上期仅 52 分钟），除检索中顺带命中 002、031 外，均沿用 20:00 期核验结论，未推定办结。" That's honest and concise. Then a grouped table.
+
+剔除: 0, with 不纳入清单:
+- 4114907 江汉关轮渡提升改造建议 → 纯建议无具体诉求对象
+- 17403026485 菜鸟驿站纠纷（已报警）→ 治安/消费混合，行政诉求不明
+- 165? no.
+
+待核 table 5 rows.
+
+来源覆盖 table 7 rows with queries and results.
+
+合规声明.
+
+Let me write the file.
+
+Details for 035-038: need 溯源 line with page title, 抓取时间, 需人工复核.
+
+ID numbering style: prior report uses WH-20261125-0XX.
+
+Let me write.
+dsh: reasoning:
+Now read back and verify:
+1. Each new ledger entry has source_url, desensitized, status evidence.
+2. JSON valid, 38 lines, no modification of existing lines (git diff would show; can't run git per instructions "不要执行 git 命令"). I can verify first 34 lines hash unchanged? I didn't record hash before. But I appended, so tail 4 lines new. Fine.
+
+Let me run a validation script: parse all lines, check required fields non-empty, check for phone/ID patterns, check new entries' URLs, check no full names. Also read back the report.
+
+Check sensitive patterns: 11-digit phone numbers, 身份证 18 digits, "房" numbers. Let me script.
+dsh: reasoning:
+Sensitive hits flagged. Need to inspect. Some may be false positives: e.g., ref_no 17402137678 is 11 digits starting 17 → matches mobile regex. Indeed heimao complaint IDs start with 1740..., 11 digits → false positive mobile. Similarly 019 "idcard" false positive maybe a 18-digit number in content? Let me check exactly what matched for each.
+
+For 038, ref_no 17403101639 is 11 digits starting 17 → false positive. Good.
+
+019 idcard: let me see. Possibly "2026-11-25T..." no. Let me find match context.
+dsh: reasoning:
+All false positives: heimao complaint IDs (11 digits starting 17) and 信访件编号 XX420114202611044393 (18 chars, contains letters). No real phone/ID. Good.
+
+Now read back the report to verify content and check formatting. Also verify no full names in new entries: complainants are masked accounts/nicknames. Report check for "先生/女士" full names — none.
+
+Let me read the report file quickly (maybe first 60 lines and section 5). Actually I wrote it; need "read 回读核对" per instructions. Let me read full file.
+dsh: reasoning:
+Report reads well. One issue: line 106 says "人大代表追讨工程款信访" — the search result is about 人大代表追讨3亿工程款, involving 湖北高院; fine as exclusion rationale.
+
+Line 5: "涉企专项检索 3 组" — I ran 2 queries + 1 fetch/page = fine.
+
+A-level count: previously 12 A-level. New 4 all B → 12 A, 26 B = 38. Correct. 民生 37, 涉企 1: new all 民生, prior 33 民生 1 涉企 → 37/1. Correct.
+
+Check 在库复核 count: 12+17+5=34. cjn count: 001-003 (3), 017-025 (9), 028-032 (5) = 17. yes.
+
+Potential accuracy issue: line 63 says 002 and 031 "在检索结果中顺带命中" — 4112175 appeared in first cjn search, 4112295 appeared. Yes.
+
+Line 103: "011-25" typo (should be 11-25). Fix.
+
+Also the "不纳入清单" for 4114907: status "留言板正在办理中" — it's a suggestion, still "办理中", but excluded by scope, not by completion. Fine.
+
+Potential issue: 038 heimao – "先付79元...对方称交2000元...共支付2079元" — 79+2000=2079. The snippet said "需要交2000元十天时间". It's plausible total 2079 from title. Fine.
+
+Now double-check 037 summary says "35栋底商" — original "35栋101-107". I kept 35栋, which is a building number; rule says only 楼栋号 allowed when needed. Fine. But is 35栋 the complainant's residence? No, it's the shop location. Fine.
+
+One more check: the report's 待核 says "新增 1 条 + 结转 4 条" = 5. The new one is jxj 武衡; carried: 26537865, 4101514, 4112340, 17403118718. Yes.
+
+Fix typo 011-25 → 11-25. Also consider line 100: "`index_1` 6 条在库（011–016）" — index_1 has 8 entries: 011-016 are 6, plus 过江隧道 and 网约车 = 8. Correct.
+
+Line 100 "`index_2` 为 10-24～11-01，超窗" — includes 常青公园 KTV 10-29 which was excluded previously as resolved. Fine.
+
+Now also should I check that existing ledger lines weren't modified: I can compare line 1-34 fingerprints/ids and maybe lengths to prior report; appending only is enough.
+
+Also the task says "4) 写入完成后 read 回读核对：每条有原文链接、已脱敏、状态有依据句。" I've validated via script and read report. Maybe also print each new row's key fields for the record. Done in validation.
+
+Now fix typo.
+dsh: reasoning:
+Now final checks:
+- Exclusion file unchanged (0 additions expected), report says so.
+- Ensure no git commands used. Correct.
+- Maybe update 报告/进度.md? Not required by task, and it says push handled externally. Task only lists 3 outputs. Don't touch.
+
+Should I also update 数据/线索台账.csv / 台账汇总.md? Task says ledger jsonl only. The 生成看板 tool may need csv, but not required and could conflict. Skip.
+
+Final validation: confirm file mtime and that exclusions still 2 lines. Also confirm new rows' status_evidence references. And maybe check report directory listing.
+
+Let me run final sanity check including JSON per-line and that 38 unique IDs. Also confirm exclusion count.
+dsh: reasoning:
+Done. Provide final summary in Chinese, concise, with outputs, counts, coverage, limitations. No need to mention internal reasoning extensively.
+
+I should note: 0 涉企 again, 4 new, 0 excluded. Mention files. Also note no git run.
+本期归集已完成（2026-11-25 20:52 期，窗口 11-11 至 11-25）。
+
+## 结果
+- **新增 4 条，状态更新 0 条，剔除 0 条，待核 5 条**
+- 台账累计 38 条（A 级 12 条、B 级 26 条；民生 37 条、涉企 1 条）
+- 共完成 15 次采集调用，覆盖 6 个必查渠道和市经信局涉企栏目
+
+## 新增条目
+| 编号 | 类别 | 事项 | 来源 | 状态 |
+|---|---|---|---|---|
+| WH-20261125-035 | 民生 | 左岭大道高架桥下绿化遮挡视线 | 留言板 4114438 | 未办结 |
+| WH-20261125-036 | 民生 | 光谷国际广场门口地砖大面积破损 | 留言板 4114700 | 未办结 |
+| WH-20261125-037 | 民生 | 江夏美的君兰半岛底商“京东养车”破坏人车分流 | 留言板 4110074 | 未办结 |
+| WH-20261125-038 | 民生 | 武汉无遗婚恋服务收费 2079 元被指欺诈 | 黑猫 17403101639 | 未处理 |
+
+## 判定要点
+- 市政府来信公示首页、`index_1`、`index_2` 三页与 20:00 期完全一致，窗口内新增 0 条；市教育局、市住建局最新来信仍为 10-21、10-28，窗口内 0 条。
+- 新增 4 条均为 B 级：城市留言板详情页前端渲染，黑猫详情页 404，因此只能凭搜索收录页记录，已逐条标注“需人工复核”。
+- 在库 34 条中，市政府来信公示 12 条已实际重抓比对；其余条目因距上期仅 52 分钟，沿用上期核验结论，**未推定任何条目办结**。
+- 涉企线索连续第四期 0 条；涉企检索命中事项均为政策征集、座谈会综述或已进入诉讼的纠纷。
+- 待核 5 条（新增市经信局“武衡设备公司改制遗留”1 条，结转 4 条）；4114907 属纯建议、菜鸟驿站纠纷已报警，列入“不纳入清单”留痕。
+
+## 产出文件
+- `报告/2026-11-25_2052.md`（六节结构完整）
+- `数据/线索台账.jsonl`（追加 4 行，未改动已有 34 行）
+- `数据/剔除记录.jsonl`（本期无新增，仍 2 条）
+
+已回读核对：4 条新增均有原文链接、已完成脱敏、状态依据句完整，JSON 逐行解析通过、指纹无重复。未执行任何 git 命令。
+已生成 38 条 -> /opt/wuhan-leads/看板/index.html
