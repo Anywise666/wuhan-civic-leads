@@ -89,9 +89,9 @@
     <select id="status"><option value="">全部状态</option></select>
     <select id="src"><option value="">全部渠道</option></select>
     <select id="sort">
+      <option value="date_desc">发布时间 新→旧</option>
       <option value="id_desc">编号 新→旧</option>
       <option value="id_asc">编号 旧→新</option>
-      <option value="date_desc">发布时间 新→旧</option>
     </select>
     <button id="reset" type="button">重置</button>
     <span id="count"></span>
@@ -236,9 +236,9 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") modal.classList.r
   const el=document.getElementById(id);
   el.addEventListener(el.tagName==="INPUT"?"input":"change", render);
 });
-reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; document.getElementById("sort").value="id_desc"; render(); });
+reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; document.getElementById("sort").value="date_desc"; render(); });
 
-document.getElementById("gen").textContent = "生成时间：" + "2026-11-25 21:15" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
+document.getElementById("gen").textContent = "生成时间：" + "2026-11-25 21:21" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
 initSelects(); renderStats(sorted); render();
 </script>
 </body>
