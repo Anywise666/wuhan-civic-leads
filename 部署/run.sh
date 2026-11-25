@@ -31,6 +31,13 @@ if command -v python3 >/dev/null 2>&1; then
   [ -f 看板/index.html ] && cp 看板/index.html index.html
 fi
 
+# 只保留最近 100 期报告
+if [ -d 报告 ]; then
+  ls -1 报告/*.md 2>/dev/null | sort | head -n -100 | while read -r old; do
+    rm -f "$old"
+  done
+fi
+
 # 推送（deploy key：优先用仓库目录里的，其次 /root/.ssh/wuhan_deploy）
 KEY="${APP}/.ssh_deploy_key"
 [ -f "${KEY}" ] || KEY=/root/.ssh/wuhan_deploy

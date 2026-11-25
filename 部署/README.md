@@ -1,4 +1,4 @@
-﻿# 服务器部署（DSH headless + cron）
+# 服务器部署（DSH headless + cron）
 
 目标：在 Linux 服务器上每 12 小时跑一次归集，不依赖任何个人电脑。
 
@@ -46,5 +46,5 @@ chmod 644 /etc/cron.d/wuhan-leads
 - 任务文本从 stdin 传入（`< 部署/任务.txt`），比超长命令行参数稳；
 - 无人值守用 `--approval-policy never`，避免卡在人工审批；
 - CentOS 8 已 EOL：本脚本只切 yum 源到 vault，不做系统升级；后续可迁 Rocky 8；
-- 日志在 `/opt/wuhan-leads/logs/`，按天清理由 `run.sh` 处理。
+- 日志在 `/opt/wuhan-leads/logs/`，按天清理由 `run.sh` 处理；`报告/` 只保留最近 **100 期**，由 `run.sh` 自动删除更早的。
 
