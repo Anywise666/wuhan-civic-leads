@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# 每期执行：headless 归集 -> 刷新看板 -> 推送到 GitHub
+set -u
+
+APP=/opt/wuhan-leads
+export PATH=/opt/node22/bin:$PATH
+cd "${APP}" || exit 1
+mkdir -p logs
+
+if [ -f .env ]; then set -a; . ./.env; set +a; fi
+if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
+  echo "$(date '+%F %T') DEEPSEEK_API_KEY 未设置，跳过" >> logs/error.log
+  exit 2
+fi
+
+LOG="logs/run-$(date +%F_%H%M).log"
+find logs -name 'run-*.log' -mtime +30 -delete 2>/dev/null || true
+
+echo "$(date '+%F %T') start" >> "${LOG}"
+dsh --profile headless --permission-mode workspace-write --approval-policy never \
+    < 部署/任务.txt >> "${LOG}" 2>&1
+RC=$?
+
+# 刷新看板（Python 3.6 兼容）
+if command -v python3 >/dev/null 2>&1; then
+  python3 工具/生成看板.py >> "${LOG}" 2>&1 || true
+  [ -f 看板/index.html ] && cp 看板/index.html index.html
+fi
+
+# 推送（deploy key）
+export GIT_SSH_COMMAND="ssh -i /root/.ssh/wuhan_deploy -o IdentitiesOnly=yes"
+git add -A >> "${LOG}" 2>&1
+if ! git diff --cached --quiet; then
+  git -c user.name="wuhan-leads-agent" -c user.email="agent@users.noreply.github.com" \
+      commit -m "自动归集 $(date '+%F %H:%M')" >> "${LOG}" 2>&1
+  git push origin main >> "${LOG}" 2>&1 || true
+fi
+
+echo "$(date '+%F %T') done rc=${RC}" >> "${LOG}"
+exit ${RC}

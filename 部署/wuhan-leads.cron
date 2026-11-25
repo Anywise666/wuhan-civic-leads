@@ -1,0 +1,5 @@
+# /etc/cron.d/wuhan-leads
+# 每 6 小时一期（默认，控制 API 成本）。想改回 2 小时：把 0 */6 换成 0 */2。
+SHELL=/bin/bash
+PATH=/opt/node22/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 */6 * * * root /opt/wuhan-leads/部署/run.sh >> /opt/wuhan-leads/logs/cron.log 2>&1
