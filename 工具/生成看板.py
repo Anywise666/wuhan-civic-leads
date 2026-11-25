@@ -104,6 +104,11 @@ TEMPLATE = r"""<!DOCTYPE html>
     <select id="cat"><option value="">全部类别</option></select>
     <select id="status"><option value="">全部状态</option></select>
     <select id="src"><option value="">全部渠道</option></select>
+    <select id="sort">
+      <option value="id_desc">编号 新→旧</option>
+      <option value="id_asc">编号 旧→新</option>
+      <option value="date_desc">发布时间 新→旧</option>
+    </select>
     <button id="reset" type="button">重置</button>
     <span id="count"></span>
   </div>
@@ -150,7 +155,15 @@ const statusClass = s => {
 };
 
 const catClass = c => c === "涉企" ? "cat cat-ent" : "cat";
-const sorted = DATA.slice().sort((a,b)=> String(b.published_at||"").localeCompare(String(a.published_at||"")));
+let sorted = DATA.slice();
+
+function sortBy(mode){
+  const arr = DATA.slice();
+  if(mode === "id_asc") arr.sort((a,b)=> String(a.id||"").localeCompare(String(b.id||"")));
+  else if(mode === "date_desc") arr.sort((a,b)=> String(b.published_at||"").localeCompare(String(a.published_at||"")));
+  else arr.sort((a,b)=> String(b.id||"").localeCompare(String(a.id||"")));
+  return arr;
+}
 
 function uniq(key){
   return [...new Set(sorted.map(x=>x[key]).filter(Boolean))];
@@ -180,6 +193,7 @@ function renderStats(list){
 }
 
 function render(){
+  sorted = sortBy(document.getElementById("sort").value);
   const q=(document.getElementById("q").value||"").trim().toLowerCase();
   const c=cat.value, s=document.getElementById("status").value, sr=src.value;
   const list=sorted.filter(x=>{
@@ -234,11 +248,11 @@ document.getElementById("rows").addEventListener("click", e=>{
 document.getElementById("close").addEventListener("click", ()=>modal.classList.remove("open"));
 modal.addEventListener("click", e=>{ if(e.target===modal) modal.classList.remove("open"); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") modal.classList.remove("open"); });
-["q","cat","status","src"].forEach(id=>{
+["q","cat","status","src","sort"].forEach(id=>{
   const el=document.getElementById(id);
   el.addEventListener(el.tagName==="INPUT"?"input":"change", render);
 });
-reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; render(); });
+reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; document.getElementById("sort").value="id_desc"; render(); });
 
 document.getElementById("gen").textContent = "生成时间：" + __GEN__ + " · 共 " + DATA.length + " 条 · 覆盖窗口 __WINDOW__";
 initSelects(); renderStats(sorted); render();
