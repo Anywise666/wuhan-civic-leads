@@ -1,12 +1,12 @@
-# 服务器部署（DSH headless + cron）
+﻿# 服务器部署（DSH headless + cron）
 
-目标：在 Linux 服务器上每 6 小时跑一次归集，不依赖任何个人电脑。
+目标：在 Linux 服务器上每 12 小时跑一次归集，不依赖任何个人电脑。
 
 ## 决策（与 WorkBuddy 盘点一致）
 
 - Node：独立装到 `/opt/node22`，**不动** `/usr/bin/node`（现有小程序 / hannews 服务继续用 18）；
 - 运行目录：`/opt/wuhan-leads`（从 GitHub clone，含规则/工具/数据/报告）；
-- 触发：cron（或 systemd timer），每 6 小时一次，可改 2 小时；
+- 触发：cron（或 systemd timer），每 12 小时一次，可改 2 小时；
 - 推送：服务器生成 deploy key，只对 `Anywise666/wuhan-civic-leads` 有写权限；
 - 凭据：`/opt/wuhan-leads/.env` 存 `DEEPSEEK_API_KEY`，权限 600，不进 git。
 
@@ -47,3 +47,4 @@ chmod 644 /etc/cron.d/wuhan-leads
 - 无人值守用 `--approval-policy never`，避免卡在人工审批；
 - CentOS 8 已 EOL：本脚本只切 yum 源到 vault，不做系统升级；后续可迁 Rocky 8；
 - 日志在 `/opt/wuhan-leads/logs/`，按天清理由 `run.sh` 处理。
+
