@@ -1,3 +1,4 @@
+﻿# 已废弃：早期桌面端一次性部署脚本；现由服务器 systemd + deploy key 完成，保留仅作存档。
 # -*- coding: utf-8 -*-
 """把看板发布到 GitHub Pages（一次性部署）。
 
@@ -255,3 +256,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
