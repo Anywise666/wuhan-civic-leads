@@ -1,5 +1,6 @@
 ﻿# /etc/cron.d/wuhan-leads
-# 每 12 小时一期（00:15 / 12:15），与 systemd timer 等价，二选一
+# 每 12 小时一期（08:00 / 20:00），与 systemd timer 等价，二选一
 SHELL=/bin/bash
 PATH=/opt/node24/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-15 0,12 * * * root /opt/wuhan-leads/部署/run.sh >> /opt/wuhan-leads/logs/cron.log 2>&1
+0 8,20 * * * root /opt/wuhan-leads/部署/run.sh >> /opt/wuhan-leads/logs/cron.log 2>&1
+

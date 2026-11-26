@@ -1,10 +1,10 @@
-# 服务器部署（DSH headless + systemd）
+﻿# 服务器部署（DSH headless + systemd）
 
 目标：在 Linux 服务器上每 12 小时跑一次归集，不依赖任何个人电脑。当前生产实例：`172.32.18.2`，目录 `/opt/wuhan-leads`。
 
 ## 运行架构
 
-`wuhan-leads.timer`（00:15 / 12:15）→ `wuhan-leads.service`（oneshot）→ `部署/run.sh`
+`wuhan-leads.timer`（08:00 / 20:00）→ `wuhan-leads.service`（oneshot）→ `部署/run.sh`
 → `dsh --profile headless` 读 `部署/任务.txt` → 写报告/台账 → 生成看板 → SSH 推 GitHub → Pages 重建。
 
 ## 关键决策（实测结论）
@@ -38,9 +38,13 @@ systemctl list-timers wuhan-leads.timer --no-pager
 tail -n 30 /opt/wuhan-leads/logs/run-*.log | tail -30
 ```
 
+- **systemd 时间写法**：用 `OnCalendar=*-*-* 08,20:00`；写成 `08:00,20:00` 会被 systemd 只解析成 08:00（实测踩过）。
+
 ## 注意
 
 - 不要在别的机器再启用 DSH 桌面调度，避免与服务器重复采集；
 - 本机执行 `python 工具\更新线上.py` 前先 `git pull`，否则可能用旧台账覆盖仓库；
 - CentOS 8 已 EOL：脚本只切 yum 源到 vault，不做系统升级；后续可迁 Rocky 8；
 - `部署/wuhan-leads.cron` 是 cron 备选（二选一），内容与 systemd timer 等价。
+
+

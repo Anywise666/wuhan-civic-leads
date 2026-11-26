@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # 服务器一次性安装：git/jq + Node24(/opt/node24) + dsh + known_hosts + deploy key + clone + systemd
 # 注意：dsh 的 bin 用 `#!/usr/bin/env node`，运行时必须把 /opt/node24/bin 放在 PATH 最前。
 set -euo pipefail
@@ -76,7 +76,7 @@ cat > /etc/systemd/system/wuhan-leads.timer <<'EOF'
 Description=Run Wuhan Leads collector every 12 hours
 
 [Timer]
-OnCalendar=*-*-* 00,12:15:00
+OnCalendar=*-*-* 08,20:00
 Persistent=true
 RandomizedDelaySec=300
 
@@ -90,3 +90,4 @@ echo "剩余两步（手工）："
 echo "  1) 填 API Key：echo 'DEEPSEEK_API_KEY=sk-xxx' > /etc/wuhan-leads.env && chmod 600 /etc/wuhan-leads.env"
 echo "  2) 验证一期：systemctl start wuhan-leads.service，看 /opt/wuhan-leads/logs/"
 echo "  3) 启用定时：systemctl enable --now wuhan-leads.timer"
+
