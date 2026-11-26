@@ -16,6 +16,7 @@
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  body.modal-open{overflow:hidden}
   .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
   .hero{background:linear-gradient(135deg,#0b3d5c 0%,#155e85 70%,#1d6f9c 100%);color:#fff;padding:34px 0 28px}
   .kicker{font-size:13px;letter-spacing:.18em;opacity:.8;margin-bottom:6px}
@@ -54,9 +55,16 @@
   .cat-ent{background:#fdf2f4;color:#a3122b}
   .hint{color:var(--muted);font-size:12.5px;margin:10px 2px 0}
   .empty{padding:40px;text-align:center;color:var(--muted)}
+  .cards{display:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer}
+  .card:active{background:#eef6fb}
+  .card .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+  .card h3{margin:0 0 6px;font-size:15.5px;line-height:1.45;font-weight:600}
+  .card .meta{color:var(--muted);font-size:12px;display:flex;flex-wrap:wrap;gap:6px}
+  .card .sum{color:#475569;font-size:13px;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
   .modal.open{display:flex}
-  .panel{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:86vh;overflow:auto;padding:26px 28px;position:relative}
+  .panel{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:86vh;overflow:auto;padding:26px 28px;position:relative;-webkit-overflow-scrolling:touch}
   .panel h2{margin:6px 0 4px;font-size:21px;line-height:1.45}
   .panel .meta{color:var(--muted);font-size:13px;margin-bottom:16px}
   .panel dl{display:grid;grid-template-columns:92px 1fr;gap:10px 14px;margin:0}
@@ -70,6 +78,19 @@
     .stats{grid-template-columns:repeat(2,1fr)}
     h1{font-size:24px}
     .panel dl{grid-template-columns:1fr}
+  }
+  @media (max-width:760px){
+    .tablewrap{display:none}
+    .cards{display:grid;gap:10px}
+    .toolbar{position:sticky;top:0;z-index:20;background:rgba(246,248,251,.97);backdrop-filter:blur(8px);padding:10px 0;margin:0 0 10px}
+    .toolbar input{flex:1 1 100%;font-size:16px}
+    .toolbar select{flex:1 1 calc(50% - 5px);min-width:0;font-size:16px}
+    .toolbar button{flex:0 0 auto;font-size:16px}
+    #count{flex:1 1 100%;margin-left:0;text-align:right}
+    .modal{align-items:flex-end;padding:0}
+    .panel{max-width:none;width:100%;max-height:92vh;border-radius:18px 18px 0 0;padding:22px 18px calc(26px + env(safe-area-inset-bottom))}
+    .panel h2{font-size:18px}
+    footer{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
   }
 </style>
 </head>
@@ -102,7 +123,8 @@
       <tbody id="rows"></tbody>
     </table>
   </div>
-  <p class="hint">点击任意一行查看诉求摘要、投诉人（脱敏）、承办单位、状态依据与原文链接。</p>
+  <div id="cards" class="cards"></div>
+  <p class="hint">点击任意一条查看诉求摘要、投诉人（脱敏）、承办单位、状态依据与原文链接。</p>
 </main>
 <footer>
   <div class="wrap">
@@ -191,7 +213,11 @@ function render(){
     return true;
   });
   count.textContent = `当前 ${list.length} / ${sorted.length} 条`;
-  if(!list.length){ rows.innerHTML = `<tr><td colspan="7"><div class="empty">没有匹配的线索</div></td></tr>`; return; }
+  if(!list.length){
+    rows.innerHTML = `<tr><td colspan="7"><div class="empty">没有匹配的线索</div></td></tr>`;
+    document.getElementById("cards").innerHTML = `<div class="empty">没有匹配的线索</div>`;
+    return;
+  }
   rows.innerHTML = list.map((x,i)=>{
     const idx = sorted.indexOf(x);
     return `<tr data-i="${idx}">
@@ -203,6 +229,19 @@ function render(){
       <td><span class="badge ${statusClass(x.status)}">${esc(x.status)}</span></td>
       <td class="date">${esc(x.verify_level)}</td>
     </tr>`;
+  }).join("");
+  document.getElementById("cards").innerHTML = list.map((x)=>{
+    const idx = sorted.indexOf(x);
+    return `<article class="card" data-i="${idx}">
+      <div class="top">
+        <span class="badge ${statusClass(x.status)}">${esc(x.status)}</span>
+        <span class="${catClass(x.category)}">${esc(x.category)}</span>
+        <span class="date">${esc(x.verify_level)} 级</span>
+      </div>
+      <h3>${esc(x.title)}</h3>
+      <div class="meta"><span>${esc(x.id)}</span><span>${esc(fmtDate(x.published_at))}</span><span>${esc(x.channel)}</span></div>
+      <div class="sum">${esc(x.summary)}</div>
+    </article>`;
   }).join("");
 }
 
@@ -224,21 +263,30 @@ function openDetail(i){
       <dt>去重指纹</dt><dd class="id">${esc(x.fingerprint || "")}</dd>
     </dl>`;
   modal.classList.add("open");
+  document.body.classList.add("modal-open");
+}
+
+function closeModal(){
+  modal.classList.remove("open");
+  document.body.classList.remove("modal-open");
 }
 
 document.getElementById("rows").addEventListener("click", e=>{
   const tr=e.target.closest("tr[data-i]"); if(tr) openDetail(Number(tr.dataset.i));
 });
-document.getElementById("close").addEventListener("click", ()=>modal.classList.remove("open"));
-modal.addEventListener("click", e=>{ if(e.target===modal) modal.classList.remove("open"); });
-document.addEventListener("keydown", e=>{ if(e.key==="Escape") modal.classList.remove("open"); });
+document.getElementById("cards").addEventListener("click", e=>{
+  const c=e.target.closest(".card[data-i]"); if(c) openDetail(Number(c.dataset.i));
+});
+document.getElementById("close").addEventListener("click", closeModal);
+modal.addEventListener("click", e=>{ if(e.target===modal) closeModal(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
 ["q","cat","status","src","sort"].forEach(id=>{
   const el=document.getElementById(id);
   el.addEventListener(el.tagName==="INPUT"?"input":"change", render);
 });
 reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; document.getElementById("sort").value="date_desc"; render(); });
 
-document.getElementById("gen").textContent = "生成时间：" + "2026-11-26 00:19" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
+document.getElementById("gen").textContent = "生成时间：" + "2026-11-26 08:56" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
 initSelects(); renderStats(sorted); render();
 </script>
 </body>
