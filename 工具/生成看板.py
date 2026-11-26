@@ -143,6 +143,14 @@ TEMPLATE = r"""<!DOCTYPE html>
     .stat b{font-size:22px}
     .grp{scroll-margin-top:112px}
   }
+  @media (min-width:761px) and (max-width:1080px){
+    .tablewrap{display:none}
+    .cards{display:block}
+    .grp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .grp-title{grid-column:1/-1;margin-top:2px}
+    .stat b{font-size:22px}
+    .hero{padding:26px 0 20px}
+  }
 </style>
 </head>
 <body>
