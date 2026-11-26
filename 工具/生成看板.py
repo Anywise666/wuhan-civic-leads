@@ -419,7 +419,7 @@ function showInstallHelp(prefix){
   if(/MicroMessenger/i.test(ua)) msg = "你在微信内置浏览器里：点右上角「…」→「在浏览器打开」，再在浏览器菜单里选「安装应用 / 添加到主屏幕」。";
   else if(/QQ\//i.test(ua)) msg = "QQ 内置浏览器不支持安装：点右上角「…」→「在浏览器打开」，再用 Chrome 打开本页。";
   else if(/iPhone|iPad|iPod/i.test(ua)) msg = "Safari：点底部「分享」按钮 →「添加到主屏幕」。";
-  else if(/HONOR|Huawei|HMSCore|MagicUI/i.test(ua)) msg = "荣耀/华为自带浏览器对 PWA 支持不完整，可能不会弹安装框。\n\n可选：\n1) 用 Chrome 打开本页，点「⋮ → 安装应用」；\n2) 或在当前浏览器菜单里选「添加到主屏幕 / 添加书签」；\n3) 把链接复制到 Chrome 后再安装，体验最好。";
+  else if(/HONOR|Huawei|HMSCore|MagicUI/i.test(ua)) msg = "荣耀/华为自带浏览器对 PWA 支持不完整，多数版本不会弹安装框。\n\n可试：点底部「⋮」或「≡」→ 菜单列表向上滑 →「添加至」→「桌面」（部分版本叫「添加到桌面」或「收藏 → 桌面书签」）。\n\n若菜单里没有这些选项，说明该版本阉割了此功能：请用 Chrome 打开本页 →「⋮ → 安装应用」，装出来才是全屏、可离线的版本。";
   else msg = "Chrome：点右上角「⋮」→「安装应用」或「添加到主屏幕」；若没有这一项，先刷新一次页面再试。";
   document.getElementById("helpBody").textContent = (prefix ? prefix + "\n\n" : "") + msg;
   document.getElementById("helpModal").classList.add("open");
