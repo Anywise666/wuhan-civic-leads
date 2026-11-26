@@ -3,6 +3,8 @@
   "short_name": "武汉线索",
   "description": "武汉民生与涉企诉求线索看板：公开信息、已脱敏、可溯源",
   "lang": "zh-CN",
+  "id": "./",
+  "prefer_related_applications": false,
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

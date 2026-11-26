@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="武汉线索">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="武汉线索">
 <link rel="apple-touch-icon" href="./icon-180.png">
 <title>武汉诉求线索看板</title>
 <style>
@@ -28,8 +30,8 @@
   .kicker{font-size:13px;letter-spacing:.18em;opacity:.8;margin-bottom:6px}
   h1{margin:0 0 6px;font-size:30px;letter-spacing:.02em}
   .sub{margin:0 0 20px;opacity:.86;font-size:14px}
-  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-  .stat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 14px}
+  .installBtn{display:none}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}  .stat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 14px}
   .stat b{display:block;font-size:26px;line-height:1.2}
   .stat span{font-size:12px;opacity:.85}
   main{padding:22px 0 8px}
@@ -98,6 +100,7 @@
     h1{font-size:22px}
     .sub{font-size:12.5px;margin-bottom:14px}
     .stats{grid-template-columns:repeat(4,1fr);gap:8px}
+    .installBtn{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:999px;padding:7px 14px;font-size:13px}
     .stat{padding:8px 6px;border-radius:10px}
     .stat b{font-size:19px}
     .stat span{font-size:10.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -132,6 +135,7 @@
     <div class="kicker">武汉市 · 民生与涉企诉求线索库</div>
     <h1>武汉诉求线索看板</h1>
     <p class="sub">公开网络线索归集 · 每条可溯源 · 投诉人已脱敏 · 剔除官媒/官方已办结事项</p>
+    <button id="installBtn" class="installBtn" type="button">安装到桌面</button>
     <div class="stats" id="stats"></div>
   </div>
 </header>
@@ -177,6 +181,14 @@
   <div class="panel">
     <button class="close" id="close" type="button" aria-label="关闭">×</button>
     <div id="detail"></div>
+  </div>
+</div>
+<div class="modal" id="helpModal">
+  <div class="panel">
+    <button class="close" id="helpClose" type="button" aria-label="关闭">×</button>
+    <h2>安装到桌面</h2>
+    <p id="helpBody" style="font-size:14px;color:#334155"></p>
+    <p style="font-size:12.5px;color:var(--muted);margin-top:10px">装好后从桌面图标启动，全屏无地址栏；首次联网打开过后可离线查看。</p>
   </div>
 </div>
 <script>
@@ -377,8 +389,29 @@ document.addEventListener("click", e=>{
   if(!filtersEl.contains(e.target) && e.target.id !== "filterToggle") filtersEl.classList.remove("open");
 });
 
-document.getElementById("gen").textContent = "生成时间：" + "2026-11-26 09:16" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
+document.getElementById("gen").textContent = "生成时间：" + "2026-11-26 09:44" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
 initSelects(); initNavCounts(); renderStats(sorted); render();
+
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", e=>{ e.preventDefault(); deferredPrompt = e; });
+document.getElementById("installBtn").addEventListener("click", async ()=>{
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    try { await deferredPrompt.userChoice; } catch(_){}
+    deferredPrompt = null;
+    return;
+  }
+  const ua = navigator.userAgent;
+  let msg;
+  if(/MicroMessenger/i.test(ua)) msg = "你在微信内置浏览器里：点右上角「…」→「在浏览器打开」，再在浏览器菜单里选「安装应用 / 添加到主屏幕」。";
+  else if(/QQ\//i.test(ua)) msg = "QQ 内置浏览器不支持安装：点右上角「…」→「在浏览器打开」，再用 Chrome 打开本页。";
+  else if(/iPhone|iPad|iPod/i.test(ua)) msg = "Safari：点底部「分享」按钮 →「添加到主屏幕」。";
+  else msg = "Chrome：点右上角「⋮」→「安装应用」或「添加到主屏幕」；若没有这一项，先刷新一次页面再试。";
+  document.getElementById("helpBody").textContent = msg;
+  document.getElementById("helpModal").classList.add("open");
+});
+document.getElementById("helpClose").addEventListener("click", ()=>document.getElementById("helpModal").classList.remove("open"));
+document.getElementById("helpModal").addEventListener("click", e=>{ if(e.target.id==="helpModal") e.target.classList.remove("open"); });
 
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   window.addEventListener("load", () => {
