@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0b3d5c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="武汉线索">
+<link rel="apple-touch-icon" href="./icon-180.png">
 <title>武汉诉求线索看板</title>
 <style>
   :root{
@@ -28,6 +34,8 @@
   .stat span{font-size:12px;opacity:.85}
   main{padding:22px 0 8px}
   .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+  .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;flex:1 1 auto}
+  .filterToggle{display:none}
   .toolbar input,.toolbar select{height:38px;border:1px solid var(--line);border-radius:9px;padding:0 12px;font-size:14px;background:#fff;color:var(--ink);outline:none}
   .toolbar input{flex:1 1 280px;min-width:220px}
   .toolbar input:focus,.toolbar select:focus{border-color:#7aa8c4;box-shadow:0 0 0 3px rgba(21,94,133,.12)}
@@ -85,11 +93,21 @@
   @media (max-width:760px){
     .tablewrap{display:none}
     .cards{display:grid;gap:10px}
-    .toolbar{position:sticky;top:0;z-index:20;background:rgba(246,248,251,.97);backdrop-filter:blur(8px);padding:10px 0;margin:0 0 10px}
-    .toolbar input{flex:1 1 100%;font-size:16px}
-    .toolbar select{flex:1 1 calc(50% - 5px);min-width:0;font-size:16px}
-    .toolbar button{flex:0 0 auto;font-size:16px}
-    #count{flex:1 1 100%;margin-left:0;text-align:right}
+    .hero{padding:22px 0 16px}
+    h1{font-size:22px}
+    .sub{font-size:12.5px;margin-bottom:14px}
+    .stats{grid-template-columns:repeat(4,1fr);gap:8px}
+    .stat{padding:8px 6px;border-radius:10px}
+    .stat b{font-size:19px}
+    .stat span{font-size:10.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .toolbar{position:sticky;top:0;z-index:20;background:rgba(246,248,251,.97);backdrop-filter:blur(8px);padding:8px 0;margin:0 0 10px;flex-wrap:nowrap}
+    .toolbar input{flex:1 1 auto;min-width:0;font-size:16px;height:36px}
+    .filterToggle{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 14px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--brand);font-size:14px;flex:0 0 auto}
+    .filters{display:none;position:absolute;left:0;right:0;top:48px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 14px 34px rgba(15,23,42,.16);flex-direction:column;gap:10px;z-index:25}
+    .filters.open{display:flex}
+    .filters select{width:100%;height:38px;font-size:16px}
+    .filters button{width:100%;height:38px}
+    #count{display:none}
     .modal{align-items:flex-end;padding:0}
     .panel{max-width:none;width:100%;max-height:92vh;border-radius:18px 18px 0 0;padding:22px 18px calc(26px + env(safe-area-inset-bottom))}
     .panel h2{font-size:18px}
@@ -97,9 +115,11 @@
     main{padding-bottom:78px}
     .bottomnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:6px 0 calc(6px + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(15,23,42,.06)}
     .bottomnav button{flex:1;border:0;background:none;color:var(--muted);font-size:13px;padding:7px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
-    .bottomnav button b{font-size:15px;font-weight:600}
-    .bottomnav button.on{color:var(--brand);font-weight:600}
+    .bottomnav button b{font-size:11px;font-weight:600;line-height:1}
     .bottomnav button.on b{color:var(--brand)}
+    .stat{padding:10px 12px}
+    .stat b{font-size:22px}
+    .grp{scroll-margin-top:112px}
   }
 </style>
 </head>
@@ -115,15 +135,18 @@
 <main class="wrap">
   <div class="toolbar">
     <input id="q" type="search" placeholder="搜索标题、摘要、承办单位、编号…">
-    <select id="cat"><option value="">全部类别</option></select>
-    <select id="status"><option value="">全部状态</option></select>
-    <select id="src"><option value="">全部渠道</option></select>
-    <select id="sort">
-      <option value="date_desc">发布时间 新→旧</option>
-      <option value="id_desc">编号 新→旧</option>
-      <option value="id_asc">编号 旧→新</option>
-    </select>
-    <button id="reset" type="button">重置</button>
+    <button id="filterToggle" class="filterToggle" type="button">筛选</button>
+    <div class="filters" id="filters">
+      <select id="cat"><option value="">全部类别</option></select>
+      <select id="status"><option value="">全部状态</option></select>
+      <select id="src"><option value="">全部渠道</option></select>
+      <select id="sort">
+        <option value="date_desc">发布时间 新→旧</option>
+        <option value="id_desc">编号 新→旧</option>
+        <option value="id_asc">编号 旧→新</option>
+      </select>
+      <button id="reset" type="button">重置</button>
+    </div>
     <span id="count"></span>
   </div>
   <div class="tablewrap">
@@ -221,8 +244,8 @@ function renderStats(list){
   const ent=list.filter(x=>x.category==="涉企").length;
   const active=list.filter(x=>!/已办结|已解决/.test(x.status||"")).length;
   const a=list.filter(x=>x.verify_level==="A").length;
-  const items=[["线索总数",total],["民生",civil],["涉企",ent],["待办（未办结）",active]];
-  stats.innerHTML = items.map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}${k==="线索总数"?" · A级核验 "+a:""}</span></div>`).join("");
+  const items=[["总数",total],["民生",civil],["涉企",ent],["待办",active]];
+  stats.innerHTML = items.map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join("");
 }
 
 function render(){
@@ -269,7 +292,7 @@ function render(){
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
   });
   document.getElementById("cards").innerHTML = keys.map(k=>`
-    <section class="grp">
+    <section class="grp" data-cat="${esc(k)}">
       <div class="grp-title"><span>${esc(k)}</span><span>${groups.get(k).length} 条</span></div>
       ${groups.get(k).map(cardHtml).join("")}
     </section>`).join("");
@@ -326,7 +349,14 @@ document.getElementById("bottomnav").addEventListener("click", e=>{
   const b = e.target.closest("button[data-cat]"); if(!b) return;
   cat.value = b.dataset.cat || "";
   render();
-  window.scrollTo({top:0, behavior:"smooth"});
+  requestAnimationFrame(()=>{
+    const c = cat.value;
+    if(c){
+      const g = document.querySelector(`.grp[data-cat="${c}"]`);
+      if(g){ g.scrollIntoView({behavior:"smooth", block:"start"}); return; }
+    }
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
 });
 document.getElementById("close").addEventListener("click", closeModal);
 modal.addEventListener("click", e=>{ if(e.target===modal) closeModal(); });
@@ -335,10 +365,23 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
   const el=document.getElementById(id);
   el.addEventListener(el.tagName==="INPUT"?"input":"change", render);
 });
-reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; document.getElementById("sort").value="date_desc"; render(); });
+reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; document.getElementById("sort").value="date_desc"; document.getElementById("filters").classList.remove("open"); render(); });
 
-document.getElementById("gen").textContent = "生成时间：" + "2026-11-26 09:03" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
+const filtersEl = document.getElementById("filters");
+document.getElementById("filterToggle").addEventListener("click", ()=>filtersEl.classList.toggle("open"));
+filtersEl.addEventListener("change", ()=>filtersEl.classList.remove("open"));
+document.addEventListener("click", e=>{
+  if(!filtersEl.contains(e.target) && e.target.id !== "filterToggle") filtersEl.classList.remove("open");
+});
+
+document.getElementById("gen").textContent = "生成时间：" + "2026-11-26 09:14" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
 initSelects(); initNavCounts(); renderStats(sorted); render();
+
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
