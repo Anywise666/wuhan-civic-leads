@@ -187,7 +187,7 @@
   <div class="panel">
     <button class="close" id="helpClose" type="button" aria-label="关闭">×</button>
     <h2>安装到桌面</h2>
-    <p id="helpBody" style="font-size:14px;color:#334155"></p>
+    <p id="helpBody" style="font-size:14px;color:#334155;white-space:pre-line"></p>
     <p style="font-size:12.5px;color:var(--muted);margin-top:10px">装好后从桌面图标启动，全屏无地址栏；首次联网打开过后可离线查看。</p>
   </div>
 </div>
@@ -389,26 +389,37 @@ document.addEventListener("click", e=>{
   if(!filtersEl.contains(e.target) && e.target.id !== "filterToggle") filtersEl.classList.remove("open");
 });
 
-document.getElementById("gen").textContent = "生成时间：" + "2026-11-26 09:44" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
+document.getElementById("gen").textContent = "生成时间：" + "2026-11-26 10:16" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
 initSelects(); initNavCounts(); renderStats(sorted); render();
 
 let deferredPrompt = null;
+let installed = false;
 window.addEventListener("beforeinstallprompt", e=>{ e.preventDefault(); deferredPrompt = e; });
-document.getElementById("installBtn").addEventListener("click", async ()=>{
-  if(deferredPrompt){
-    deferredPrompt.prompt();
-    try { await deferredPrompt.userChoice; } catch(_){}
-    deferredPrompt = null;
-    return;
-  }
+window.addEventListener("appinstalled", ()=>{ installed = true; });
+
+function showInstallHelp(prefix){
   const ua = navigator.userAgent;
   let msg;
   if(/MicroMessenger/i.test(ua)) msg = "你在微信内置浏览器里：点右上角「…」→「在浏览器打开」，再在浏览器菜单里选「安装应用 / 添加到主屏幕」。";
   else if(/QQ\//i.test(ua)) msg = "QQ 内置浏览器不支持安装：点右上角「…」→「在浏览器打开」，再用 Chrome 打开本页。";
   else if(/iPhone|iPad|iPod/i.test(ua)) msg = "Safari：点底部「分享」按钮 →「添加到主屏幕」。";
+  else if(/HONOR|Huawei|HMSCore|MagicUI/i.test(ua)) msg = "荣耀/华为自带浏览器对 PWA 支持不完整，可能不会弹安装框。\n\n可选：\n1) 用 Chrome 打开本页，点「⋮ → 安装应用」；\n2) 或在当前浏览器菜单里选「添加到主屏幕 / 添加书签」；\n3) 把链接复制到 Chrome 后再安装，体验最好。";
   else msg = "Chrome：点右上角「⋮」→「安装应用」或「添加到主屏幕」；若没有这一项，先刷新一次页面再试。";
-  document.getElementById("helpBody").textContent = msg;
+  document.getElementById("helpBody").textContent = (prefix ? prefix + "\n\n" : "") + msg;
   document.getElementById("helpModal").classList.add("open");
+}
+
+document.getElementById("installBtn").addEventListener("click", async ()=>{
+  if(installed) return;
+  if(deferredPrompt){
+    try { deferredPrompt.prompt(); }
+    catch(_) { deferredPrompt = null; showInstallHelp("安装框没有弹出："); return; }
+    setTimeout(()=>{ if(!installed) showInstallHelp("如果安装框没有出现，请按下面的方式操作："); }, 2500);
+    try { await deferredPrompt.userChoice; } catch(_){}
+    deferredPrompt = null;
+    return;
+  }
+  showInstallHelp();
 });
 document.getElementById("helpClose").addEventListener("click", ()=>document.getElementById("helpModal").classList.remove("open"));
 document.getElementById("helpModal").addEventListener("click", e=>{ if(e.target.id==="helpModal") e.target.classList.remove("open"); });
