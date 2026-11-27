@@ -27,6 +27,8 @@ FIELDS = [
     ("channel", "投诉渠道"),
     ("ref_no", "留言/工单编号"),
     ("published_at", "发布时间"),
+    ("page_date", "页面发布日"),
+    ("post_time", "留言发生日"),
     ("handler", "承办单位"),
     ("status", "当前状态"),
     ("status_evidence", "状态依据"),
