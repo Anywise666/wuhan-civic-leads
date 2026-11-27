@@ -469,7 +469,7 @@ document.addEventListener("click", e=>{
   if(!filtersEl.contains(e.target) && e.target.id !== "filterToggle") filtersEl.classList.remove("open");
 });
 
-document.getElementById("gen").textContent = "生成时间：" + "2026-11-27 18:22" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
+document.getElementById("gen").textContent = "生成时间：" + "2026-11-27 18:23" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
 initSelects(); initNavCounts(); renderStats(sorted); render(); renderSocial();
 
 let deferredPrompt = null;
