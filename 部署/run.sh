@@ -51,7 +51,16 @@ if [ -x "${TCB_CLI}" ] && [ -f 看板/index.html ]; then
   else
     echo "$(date '+%F %T') cloudbase deploy failed" >> logs/error.log
   fi
-  printf '{"at":"%s","ok":%s,"env":"%s"}\n' "$(date -Iseconds)" "${CB_OK}" "${TCB_ENV}" > 数据/cloudbase_status.json
+  python3 - "${CB_OK}" "${TCB_ENV}" <<'PY' >> "${LOG}" 2>&1 || true
+import datetime, json, sys
+ok = sys.argv[1] == "true"
+json.dump(
+    {"at": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
+     "ok": ok, "env": sys.argv[2]},
+    open("数据/cloudbase_status.json", "w", encoding="utf-8"),
+    ensure_ascii=False,
+)
+PY
   # 带上同步状态再生成一次看板，并重新部署，保证 CloudBase 页脚也是最新状态
   if command -v python3 >/dev/null 2>&1; then
     python3 工具/生成看板.py >> "${LOG}" 2>&1 || true
