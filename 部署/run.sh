@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # 每期执行：headless 归集 -> 刷新看板 -> 推送到 GitHub
 set -u
 
@@ -46,8 +46,15 @@ git add -A >> "${LOG}" 2>&1
 if ! git diff --cached --quiet; then
   git -c user.name="wuhan-leads-agent" -c user.email="agent@users.noreply.github.com" \
       commit -m "自动归集 $(date '+%F %H:%M')" >> "${LOG}" 2>&1
-  git push origin main >> "${LOG}" 2>&1 || true
+  pushed=0
+  for attempt in 1 2 3 4 5; do
+    if git push origin main >> "${LOG}" 2>&1; then pushed=1; break; fi
+    echo "$(date '+%F %T') push attempt ${attempt} failed" >> logs/error.log
+    sleep $((attempt * 10))
+  done
+  [ "${pushed}" = "1" ] || echo "$(date '+%F %T') push failed after retries; next run retries" >> logs/error.log
 fi
 
 echo "$(date '+%F %T') done rc=${RC}" >> "${LOG}"
 exit ${RC}
+
