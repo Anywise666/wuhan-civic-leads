@@ -194,6 +194,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     <div id="gen"></div>
     <div style="margin-top:6px">数据来源：武汉市政府门户“来信公示”、委办局来信公示、武汉城市留言板、人民网领导留言板、黑猫投诉等公开页面。投诉人信息已按规范脱敏，不含身份证号、房号等敏感信息；内容仅反映公开页面记载，不构成对事实的最终认定。</div>
     <div style="margin-top:6px">维护：服务器 systemd 定时任务，每 12 小时自动归集；台账与逐期报告见 GitHub 仓库。</div>
+    <div style="margin-top:6px">__CB_STATUS__</div>
     <div style="margin-top:6px">访问不畅时：请稍后重试，或向分享者索取离线 HTML 文件（本站支持 PWA 离线查看）。</div>
   </div>
 </footer>
@@ -481,10 +482,23 @@ def main() -> int:
     data_js = json.dumps(rows, ensure_ascii=False).replace("</", "<\\/")
     gen = datetime.now().strftime("%Y-%m-%d %H:%M")
     window = "2026-10-26 至 2026-11-25"
+
+    cb_status = "国内镜像（CloudBase）：暂未配置"
+    status_file = BASE / "数据" / "cloudbase_status.json"
+    if status_file.exists():
+        try:
+            st = json.loads(status_file.read_text(encoding="utf-8"))
+            at = str(st.get("at", "")).replace("T", " ")[:16]
+            ok = bool(st.get("ok"))
+            cb_status = "国内镜像（CloudBase）最近同步：" + at + (" ✅" if ok else " ⚠️ 失败（请检查 CLI 登录态）")
+        except Exception:
+            cb_status = "国内镜像（CloudBase）：状态文件读取失败"
+
     html_text = (
         TEMPLATE.replace("__DATA__", data_js)
         .replace("__GEN__", json.dumps(gen, ensure_ascii=False))
         .replace("__WINDOW__", window)
+        .replace("__CB_STATUS__", cb_status)
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(html_text, encoding="utf-8")

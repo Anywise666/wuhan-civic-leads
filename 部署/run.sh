@@ -1,9 +1,9 @@
-﻿#!/usr/bin/env bash
-# 每期执行：headless 归集 -> 刷新看板 -> 推送到 GitHub
+#!/usr/bin/env bash
+# 每期执行：headless 归集 -> 刷新看板 -> 同步 CloudBase -> 推送 GitHub
 set -u
 
 APP=/opt/wuhan-leads
-# 自动选择 Node 24/22（dsh 的 bin 用 env node，必须把它放 PATH 最前）
+# dsh 的 bin 用 env node，必须把 Node24 放 PATH 最前
 for d in /opt/node24 /opt/node22; do
   if [ -x "$d/bin/dsh" ]; then export PATH="$d/bin:$PATH"; fi
 done
@@ -25,33 +25,41 @@ dsh --profile headless --permission-mode workspace-write --approval-policy never
     < "${APP}/部署/任务.txt" >> "${LOG}" 2>&1
 RC=$?
 
-# 刷新看板（Python 3.6 兼容）
+# 报告只保留最近 100 期
+if [ -d 报告 ]; then
+  ls -1 报告/*.md 2>/dev/null | sort | head -n -100 | while read -r old; do rm -f "$old"; done
+fi
+
+# 首轮生成看板（供 CloudBase 部署与 GitHub 推送）
 if command -v python3 >/dev/null 2>&1; then
   python3 工具/生成看板.py >> "${LOG}" 2>&1 || true
   [ -f 看板/index.html ] && cp 看板/index.html index.html
 fi
 
-# 只保留最近 100 期报告
-if [ -d 报告 ]; then
-  ls -1 报告/*.md 2>/dev/null | sort | head -n -100 | while read -r old; do
-    rm -f "$old"
-  done
-fi
-
-# 同步到腾讯云 CloudBase（国内镜像，失败不影响主流程）
+# 同步到腾讯云 CloudBase（国内镜像），并记录状态供页脚展示
 TCB_CLI=/opt/cloudbase-cli/bin/tcb
 TCB_ENV="${TCB_ENV:-whtvzzzx-d7gcnr78x597bb5ef}"
+CB_OK=false
 if [ -x "${TCB_CLI}" ] && [ -f 看板/index.html ]; then
   rm -rf .deploy-site && mkdir -p .deploy-site
   cp 看板/index.html .deploy-site/index.html
   for f in manifest.webmanifest sw.js icon-180.png icon-192.png icon-512.png icon-maskable-512.png go.html; do
     [ -f "$f" ] && cp "$f" .deploy-site/
   done
-  "${TCB_CLI}" hosting deploy .deploy-site -e "${TCB_ENV}" --concurrency 10 >> "${LOG}" 2>&1 \
-    || echo "$(date '+%F %T') cloudbase deploy failed" >> logs/error.log
+  if "${TCB_CLI}" hosting deploy .deploy-site -e "${TCB_ENV}" --concurrency 10 >> "${LOG}" 2>&1; then
+    CB_OK=true
+  else
+    echo "$(date '+%F %T') cloudbase deploy failed" >> logs/error.log
+  fi
+  printf '{"at":"%s","ok":%s,"env":"%s"}\n' "$(date -Iseconds)" "${CB_OK}" "${TCB_ENV}" > 数据/cloudbase_status.json
+  # 带上同步状态再生成一次看板
+  if command -v python3 >/dev/null 2>&1; then
+    python3 工具/生成看板.py >> "${LOG}" 2>&1 || true
+    [ -f 看板/index.html ] && cp 看板/index.html index.html
+  fi
 fi
 
-# 推送（deploy key：优先用仓库目录里的，其次 /root/.ssh/wuhan_deploy）
+# 推送 GitHub（deploy key，5 次退避重试）
 KEY="${APP}/.ssh_deploy_key"
 [ -f "${KEY}" ] || KEY=/root/.ssh/wuhan_deploy
 export GIT_SSH_COMMAND="ssh -i ${KEY} -o IdentitiesOnly=yes -o UserKnownHostsFile=/root/.ssh/known_hosts"
@@ -70,5 +78,3 @@ fi
 
 echo "$(date '+%F %T') done rc=${RC}" >> "${LOG}"
 exit ${RC}
-
-
