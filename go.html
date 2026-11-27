@@ -35,6 +35,12 @@
 </div>
 <script>
 (function(){
+  // 同一份 go.html 同时部署在 GitHub Pages 和腾讯云 CloudBase：
+  // 在 CloudBase 上直接进本域看板；在 GitHub 上探测本域可用性后进入。
+  if (location.hostname.indexOf("tcloudbaseapp.com") >= 0) {
+    location.replace("./index.html");
+    return;
+  }
   var GH = "https://anywise666.github.io/wuhan-civic-leads/";
   var statusEl = document.getElementById("status");
   var spin = document.getElementById("spin");

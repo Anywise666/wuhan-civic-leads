@@ -55,15 +55,14 @@ python 工具/更新线上.py     # 推送看板、规则、数据与报告到�
 
 布局自适应：手机单列卡片（≤760px）、平板双列卡片（761–1080px，含 iPad 竖屏与多数安卓平板）、桌面表格（>1080px）。
 
-## 访问不畅时怎么办
+## 访问入口
 
-GitHub Pages 在国内部分网络会间歇性打不开。**已核实：jsDelivr 对 HTML 返回 `text/plain; nosniff`，浏览器只显示源码、不渲染页面，不能当镜像用**（2026-11-27 实测）。
+| 用途 | 地址 |
+|---|---|
+| **国内主站（腾讯云 CloudBase）** | https://whtvzzzx-d7gcnr78x597bb5ef-1435914998.tcloudbaseapp.com/ |
+| GitHub Pages（备用/海外） | https://anywise666.github.io/wuhan-civic-leads/ |
 
-可用方式：
-
-1. 稍后重试——多数是短时抖动；
-2. 已安装 PWA 的设备：首次联网打开过后可离线查看；
-3. 向分享者索取 `index.html` 文件，双击即用；
-4. 长期稳定需国内托管（CloudBase / COS + 备案域名）。
-
-单链接入口（仅 GitHub Pages 可正常渲染）：https://anywise666.github.io/wuhan-civic-leads/go.html
+- 服务器每 12 小时归集后：GitHub 用 deploy key 推送，CloudBase 用 `tcb hosting deploy` 同步，两边内容一致；
+- CloudBase 环境 `whtvzzzx-d7gcnr78x597bb5ef`（体验版，至 2027-05-27），静态托管免费额度内；
+- 免费版默认域名可能有安全提示中间页；长期正式使用建议绑已备案域名；
+- **jsDelivr 不能当镜像**：对 HTML 返回 `text/plain`，只显示源码（2026-11-27 实测）。

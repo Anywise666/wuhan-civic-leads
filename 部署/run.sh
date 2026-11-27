@@ -38,6 +38,19 @@ if [ -d 报告 ]; then
   done
 fi
 
+# 同步到腾讯云 CloudBase（国内镜像，失败不影响主流程）
+TCB_CLI=/opt/cloudbase-cli/bin/tcb
+TCB_ENV="${TCB_ENV:-whtvzzzx-d7gcnr78x597bb5ef}"
+if [ -x "${TCB_CLI}" ] && [ -f 看板/index.html ]; then
+  rm -rf .deploy-site && mkdir -p .deploy-site
+  cp 看板/index.html .deploy-site/index.html
+  for f in manifest.webmanifest sw.js icon-180.png icon-192.png icon-512.png icon-maskable-512.png go.html; do
+    [ -f "$f" ] && cp "$f" .deploy-site/
+  done
+  "${TCB_CLI}" hosting deploy .deploy-site -e "${TCB_ENV}" --concurrency 10 >> "${LOG}" 2>&1 \
+    || echo "$(date '+%F %T') cloudbase deploy failed" >> logs/error.log
+fi
+
 # 推送（deploy key：优先用仓库目录里的，其次 /root/.ssh/wuhan_deploy）
 KEY="${APP}/.ssh_deploy_key"
 [ -f "${KEY}" ] || KEY=/root/.ssh/wuhan_deploy
@@ -57,4 +70,5 @@ fi
 
 echo "$(date '+%F %T') done rc=${RC}" >> "${LOG}"
 exit ${RC}
+
 
