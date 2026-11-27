@@ -64,3 +64,10 @@ GitHub Pages 在国内部分网络会间歇性打不开。备用顺序：
 3. **文件兜底**：把 `index.html` 直接发微信/邮件，双击即用。
 
 长期方案（可选）：用 GitCode Pages 做国内主站（需在 GitCode 开通 Pages），或腾讯云 CloudBase（默认域名有安全提示中间页）。
+## 单链接入口（自动选线）
+
+分享用这一个链接即可，它先探测 GitHub，通就跳 GitHub，不通自动跳 jsDelivr 备用：
+
+https://cdn.jsdelivr.net/gh/Anywise666/wuhan-civic-leads@main/go.html
+
+二维码：`share-qr.png`（内容即上面这个链接）。
