@@ -52,10 +52,12 @@ if [ -x "${TCB_CLI}" ] && [ -f 看板/index.html ]; then
     echo "$(date '+%F %T') cloudbase deploy failed" >> logs/error.log
   fi
   printf '{"at":"%s","ok":%s,"env":"%s"}\n' "$(date -Iseconds)" "${CB_OK}" "${TCB_ENV}" > 数据/cloudbase_status.json
-  # 带上同步状态再生成一次看板
+  # 带上同步状态再生成一次看板，并重新部署，保证 CloudBase 页脚也是最新状态
   if command -v python3 >/dev/null 2>&1; then
     python3 工具/生成看板.py >> "${LOG}" 2>&1 || true
     [ -f 看板/index.html ] && cp 看板/index.html index.html
+    cp 看板/index.html .deploy-site/index.html 2>/dev/null
+    "${TCB_CLI}" hosting deploy .deploy-site -e "${TCB_ENV}" --concurrency 10 >> "${LOG}" 2>&1 || true
   fi
 fi
 
