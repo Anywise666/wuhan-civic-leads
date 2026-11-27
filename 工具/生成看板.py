@@ -90,6 +90,9 @@ TEMPLATE = r"""<!DOCTYPE html>
   .social{margin-top:28px;scroll-margin-top:96px}
   .social h2{font-size:18px;margin:0 0 6px}
   .social .warn{color:#a3122b;font-size:12.5px;margin:0 0 12px;line-height:1.7}
+  .social-filter{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+  .social-filter button{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:4px 12px;font-size:12.5px;cursor:pointer}
+  .social-filter button.on{background:var(--brand);border-color:var(--brand);color:#fff}
   .social-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .scard{background:#fff;border:1px solid #f3d2d8;border-left:4px solid #c8102e;border-radius:10px;padding:10px 12px}
   .scard h3{margin:4px 0 6px;font-size:14px;line-height:1.45}
@@ -190,6 +193,13 @@ TEMPLATE = r"""<!DOCTYPE html>
       <select id="cat"><option value="">全部类别</option></select>
       <select id="status"><option value="">全部状态</option></select>
       <select id="src"><option value="">全部渠道</option></select>
+      <select id="srctype">
+        <option value="">全部来源类型</option>
+        <option value="官方">官方</option>
+        <option value="媒体">媒体</option>
+        <option value="平台">平台</option>
+        <option value="其他">其他</option>
+      </select>
       <select id="sort">
         <option value="date_desc">发布时间 新→旧</option>
         <option value="id_desc">编号 新→旧</option>
@@ -210,6 +220,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   <section id="social" class="social">
     <h2>社媒发现（未核验，请自行甄别）</h2>
     <p class="warn">以下内容来自小红书等用户发帖，仅作线索发现，未经官方核实，不构成事实认定；请自行甄别，注意保护个人信息。<br>手机端跳转 App 可能失败（笔记被删/私密/深链限制）：可点「复制链接」在浏览器或 App 内打开，或按标题搜索。</p>
+    <div class="social-filter" id="socialFilter"></div>
     <div id="socialCards" class="social-cards"></div>
   </section>
 </main>
@@ -246,6 +257,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <script>
 const DATA = __DATA__;
 const SOCIAL = __SOCIAL__;
+let socialPlat = "";
 
 const esc = s => String(s == null ? "" : s)
   .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
@@ -331,18 +343,24 @@ function initSelects(){
 function renderSocial(){
   const el = document.getElementById("socialCards");
   const note = document.getElementById("socialNote");
-  if(!SOCIAL.length){
+  const plats = ["", "小红书", "微博", "抖音"];
+  const counts = { "": SOCIAL.length };
+  plats.slice(1).forEach(p=>{ counts[p] = SOCIAL.filter(s=>s.platform===p).length; });
+  document.getElementById("socialFilter").innerHTML = plats.map(p=>
+    `<button type="button" data-plat="${p}" class="${socialPlat===p?"on":""}">${p||"全部"} ${counts[p]||0}</button>`
+  ).join("");
+
+  const list = socialPlat ? SOCIAL.filter(s=>s.platform===socialPlat) : SOCIAL;
+  if(!list.length){
     el.innerHTML = '<div class="empty">本期暂无社媒发现</div>';
-    note.textContent = "";
-    document.getElementById("navSoc").textContent = "0";
-    return;
-  }
-  el.innerHTML = SOCIAL.map(s=>`<article class="scard">
+  } else {
+    el.innerHTML = list.map(s=>`<article class="scard">
       <div class="top"><span class="srcb ${platClass(s.platform)}">${esc(s.platform||"社媒")}</span><span class="date">${esc(fmtDate(s.found_at))} 发现</span></div>
       <h3>${esc(s.title)}</h3>
       <p>${esc(s.summary)}</p>
       <div class="meta">关键词：${esc(s.keyword||"")} · <a href="${esc(s.url)}" target="_blank" rel="noopener">查看原帖</a> · <button class="copybtn" type="button" data-url="${esc(s.url)}">复制链接</button> · 未核验</div>
     </article>`).join("");
+  }
   note.textContent = `另有社媒发现 ${SOCIAL.length} 条（未核验，请自行甄别，见页面底部）`;
   document.getElementById("navSoc").textContent = String(SOCIAL.length);
 }
@@ -360,10 +378,12 @@ function render(){
   sorted = sortBy(document.getElementById("sort").value);
   const q=(document.getElementById("q").value||"").trim().toLowerCase();
   const c=cat.value, s=document.getElementById("status").value, sr=src.value;
+  const st=document.getElementById("srctype").value;
   const list=sorted.filter(x=>{
     if(c && x.category!==c) return false;
     if(s && x.status!==s) return false;
     if(sr && x.channel!==sr) return false;
+    if(st && sourceType(x)!==st) return false;
     if(q){
       const hay=[x.id,x.title,x.summary,x.handler,x.channel,x.ref_no].join(" ").toLowerCase();
       if(!hay.includes(q)) return false;
@@ -468,6 +488,12 @@ document.getElementById("socialCards").addEventListener("click", e=>{
   } else { fallback(); }
 });
 
+document.getElementById("socialFilter").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-plat]"); if(!b) return;
+  socialPlat = b.dataset.plat || "";
+  renderSocial();
+});
+
 document.getElementById("bottomnav").addEventListener("click", e=>{
   const b = e.target.closest("button[data-cat]"); if(!b) return;
   if(b.dataset.cat === "__social"){
@@ -488,11 +514,11 @@ document.getElementById("bottomnav").addEventListener("click", e=>{
 document.getElementById("close").addEventListener("click", closeModal);
 modal.addEventListener("click", e=>{ if(e.target===modal) closeModal(); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
-["q","cat","status","src","sort"].forEach(id=>{
+["q","cat","status","src","sort","srctype"].forEach(id=>{
   const el=document.getElementById(id);
   el.addEventListener(el.tagName==="INPUT"?"input":"change", render);
 });
-reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; document.getElementById("sort").value="date_desc"; document.getElementById("filters").classList.remove("open"); render(); });
+reset.addEventListener("click", ()=>{ document.getElementById("q").value=""; cat.value=""; document.getElementById("status").value=""; src.value=""; document.getElementById("srctype").value=""; document.getElementById("sort").value="date_desc"; document.getElementById("filters").classList.remove("open"); socialPlat=""; render(); renderSocial(); });
 
 const filtersEl = document.getElementById("filters");
 document.getElementById("filterToggle").addEventListener("click", ()=>filtersEl.classList.toggle("open"));
