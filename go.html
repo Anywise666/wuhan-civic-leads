@@ -3,20 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>正在打开 · 武汉诉求线索看板</title>
+<title>武汉诉求线索看板 · 入口</title>
 <style>
-  :root{--ink:#0f172a;--muted:#64748b;--brand:#0b3d5c}
+  :root{--brand:#0b3d5c}
   *{box-sizing:border-box}
   body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b3d5c,#155e85);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;padding:24px}
-  .box{max-width:420px;width:100%;text-align:center}
+  .box{max-width:440px;width:100%;text-align:center}
   h1{font-size:22px;margin:0 0 8px}
-  p{color:rgba(255,255,255,.85);font-size:14px;line-height:1.7;margin:0 0 18px}
+  p{color:rgba(255,255,255,.88);font-size:14px;line-height:1.7;margin:0 0 18px}
   .spin{width:34px;height:34px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;margin:0 auto 18px;animation:r 1s linear infinite}
   @keyframes r{to{transform:rotate(360deg)}}
   .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-  a{display:inline-block;padding:10px 18px;border-radius:999px;font-size:14px;text-decoration:none;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.4)}
+  a,button{display:inline-block;padding:10px 18px;border-radius:999px;font-size:14px;text-decoration:none;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.4);cursor:pointer}
   a.primary{background:#fff;color:var(--brand);border-color:#fff;font-weight:600}
   .hint{font-size:12px;color:rgba(255,255,255,.65);margin-top:16px}
+  .hide{display:none}
 </style>
 </head>
 <body>
@@ -24,40 +25,42 @@
   <div class="spin" id="spin"></div>
   <h1>武汉诉求线索看板</h1>
   <p id="status">正在检测线路…</p>
-  <div class="btns">
-    <a class="primary" id="gh" href="https://anywise666.github.io/wuhan-civic-leads/">GitHub 版</a>
-    <a id="jd" href="https://cdn.jsdelivr.net/gh/Anywise666/wuhan-civic-leads@main/index.html">备用版</a>
+  <div class="btns" id="btns">
+    <a class="primary" href="https://anywise666.github.io/wuhan-civic-leads/">进入看板</a>
   </div>
-  <p class="hint">通常 2 秒内自动打开；若没反应，点上面按钮</p>
+  <div class="btns hide" id="retryBox">
+    <button type="button" onclick="location.reload()">重新检测</button>
+  </div>
+  <p class="hint">正常 2 秒内自动进入；打不开时请稍后重试，或向分享者索取离线 HTML 文件</p>
 </div>
 <script>
 (function(){
   var GH = "https://anywise666.github.io/wuhan-civic-leads/";
-  var JD = "https://cdn.jsdelivr.net/gh/Anywise666/wuhan-civic-leads@main/index.html";
   var statusEl = document.getElementById("status");
   var spin = document.getElementById("spin");
+  var retryBox = document.getElementById("retryBox");
   var done = false;
 
-  function go(url, msg){
+  function go(){
     if (done) return;
     done = true;
-    statusEl.textContent = msg;
-    // 给状态文案一帧渲染时间再跳转
-    setTimeout(function(){ location.replace(url); }, 150);
+    statusEl.textContent = "线路可用，正在进入…";
+    setTimeout(function(){ location.replace(GH); }, 120);
   }
 
   var timer = setTimeout(function(){
-    go(JD, "GitHub 线路较慢，正在打开备用版…");
-  }, 2800);
+    statusEl.textContent = "GitHub 线路较慢，请稍后重试";
+    spin.classList.add("hide");
+    retryBox.classList.remove("hide");
+  }, 3200);
 
   var img = new Image();
-  img.onload = function(){
-    clearTimeout(timer);
-    go(GH, "GitHub 线路可用，正在打开…");
-  };
+  img.onload = function(){ clearTimeout(timer); go(); };
   img.onerror = function(){
     clearTimeout(timer);
-    go(JD, "GitHub 暂时打不开，正在打开备用版…");
+    statusEl.textContent = "GitHub 暂时打不开，请稍后重试";
+    spin.classList.add("hide");
+    retryBox.classList.remove("hide");
   };
   img.src = GH + "icon-192.png?ping=" + Date.now();
 })();

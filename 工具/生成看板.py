@@ -194,7 +194,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     <div id="gen"></div>
     <div style="margin-top:6px">数据来源：武汉市政府门户“来信公示”、委办局来信公示、武汉城市留言板、人民网领导留言板、黑猫投诉等公开页面。投诉人信息已按规范脱敏，不含身份证号、房号等敏感信息；内容仅反映公开页面记载，不构成对事实的最终认定。</div>
     <div style="margin-top:6px">维护：服务器 systemd 定时任务，每 12 小时自动归集；台账与逐期报告见 GitHub 仓库。</div>
-    <div style="margin-top:6px">访问不畅时的备用入口：<a href="https://cdn.jsdelivr.net/gh/Anywise666/wuhan-civic-leads@main/index.html">jsDelivr 镜像</a>（有最多约 12 小时缓存延迟）</div>
+    <div style="margin-top:6px">访问不畅时：请稍后重试，或向分享者索取离线 HTML 文件（本站支持 PWA 离线查看）。</div>
   </div>
 </footer>
 <nav class="bottomnav" id="bottomnav">

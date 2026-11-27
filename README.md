@@ -54,20 +54,16 @@ python 工具/更新线上.py     # 推送看板、规则、数据与报告到�
 荣耀/华为替代：书签保存，或改用 Edge（国内应用商店可下，Chromium 内核，支持安装 PWA）。
 
 布局自适应：手机单列卡片（≤760px）、平板双列卡片（761–1080px，含 iPad 竖屏与多数安卓平板）、桌面表格（>1080px）。
-## 访问不畅时的备用入口
 
-GitHub Pages 在国内部分网络会间歇性打不开。备用顺序：
+## 访问不畅时怎么办
 
-1. **jsDelivr 镜像**（国内 CDN，缓存最多约 12 小时）：
-   https://cdn.jsdelivr.net/gh/Anywise666/wuhan-civic-leads@main/index.html
-2. **已安装 PWA 的设备**：首次联网打开过后可离线查看；
-3. **文件兜底**：把 `index.html` 直接发微信/邮件，双击即用。
+GitHub Pages 在国内部分网络会间歇性打不开。**已核实：jsDelivr 对 HTML 返回 `text/plain; nosniff`，浏览器只显示源码、不渲染页面，不能当镜像用**（2026-11-27 实测）。
 
-长期方案（可选）：用 GitCode Pages 做国内主站（需在 GitCode 开通 Pages），或腾讯云 CloudBase（默认域名有安全提示中间页）。
-## 单链接入口（自动选线）
+可用方式：
 
-分享用这一个链接即可，它先探测 GitHub，通就跳 GitHub，不通自动跳 jsDelivr 备用：
+1. 稍后重试——多数是短时抖动；
+2. 已安装 PWA 的设备：首次联网打开过后可离线查看；
+3. 向分享者索取 `index.html` 文件，双击即用；
+4. 长期稳定需国内托管（CloudBase / COS + 备案域名）。
 
-https://cdn.jsdelivr.net/gh/Anywise666/wuhan-civic-leads@main/go.html
-
-二维码：`share-qr.png`（内容即上面这个链接）。
+单链接入口（仅 GitHub Pages 可正常渲染）：https://anywise666.github.io/wuhan-civic-leads/go.html
