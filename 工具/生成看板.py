@@ -95,6 +95,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   .scard h3{margin:4px 0 6px;font-size:14px;line-height:1.45}
   .scard p{margin:0 0 6px;font-size:12.5px;color:#475569;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .scard .meta{font-size:11.5px;color:var(--muted)}
+  .copybtn{border:1px solid var(--line);background:#fff;color:var(--brand);border-radius:6px;font-size:11px;padding:1px 7px;cursor:pointer}
   .hint{color:var(--muted);font-size:12.5px;margin:10px 2px 0}
   .empty{padding:40px;text-align:center;color:var(--muted)}
   .cards{display:none}
@@ -208,7 +209,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   <p class="hint">点击任意一条查看诉求摘要、投诉人（脱敏）、承办单位、状态依据与原文链接。</p>
   <section id="social" class="social">
     <h2>社媒发现（未核验，请自行甄别）</h2>
-    <p class="warn">以下内容来自小红书等用户发帖，仅作线索发现，未经官方核实，不构成事实认定；请自行甄别，注意保护个人信息。</p>
+    <p class="warn">以下内容来自小红书等用户发帖，仅作线索发现，未经官方核实，不构成事实认定；请自行甄别，注意保护个人信息。<br>手机端跳转 App 可能失败（笔记被删/私密/深链限制）：可点「复制链接」在浏览器或 App 内打开，或按标题搜索。</p>
     <div id="socialCards" class="social-cards"></div>
   </section>
 </main>
@@ -340,7 +341,7 @@ function renderSocial(){
       <div class="top"><span class="srcb ${platClass(s.platform)}">${esc(s.platform||"社媒")}</span><span class="date">${esc(fmtDate(s.found_at))} 发现</span></div>
       <h3>${esc(s.title)}</h3>
       <p>${esc(s.summary)}</p>
-      <div class="meta">关键词：${esc(s.keyword||"")} · <a href="${esc(s.url)}" target="_blank" rel="noopener">查看原帖</a> · 未核验</div>
+      <div class="meta">关键词：${esc(s.keyword||"")} · <a href="${esc(s.url)}" target="_blank" rel="noopener">查看原帖</a> · <button class="copybtn" type="button" data-url="${esc(s.url)}">复制链接</button> · 未核验</div>
     </article>`).join("");
   note.textContent = `另有社媒发现 ${SOCIAL.length} 条（未核验，请自行甄别，见页面底部）`;
   document.getElementById("navSoc").textContent = String(SOCIAL.length);
@@ -451,6 +452,21 @@ function initNavCounts(){
   navCivil.textContent = DATA.filter(x=>x.category==="民生").length;
   navEnt.textContent = DATA.filter(x=>x.category==="涉企").length;
 }
+
+document.getElementById("socialCards").addEventListener("click", e=>{
+  const b = e.target.closest(".copybtn"); if(!b) return;
+  const url = b.dataset.url || "";
+  const done = ()=>{ b.textContent = "已复制"; setTimeout(()=>{ b.textContent = "复制链接"; }, 1500); };
+  const fallback = ()=>{
+    const ta = document.createElement("textarea");
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch(_){}
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(url).then(done).catch(fallback);
+  } else { fallback(); }
+});
 
 document.getElementById("bottomnav").addEventListener("click", e=>{
   const b = e.target.closest("button[data-cat]"); if(!b) return;
