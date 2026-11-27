@@ -79,6 +79,19 @@ TEMPLATE = r"""<!DOCTYPE html>
   .b-done{color:var(--green);background:var(--green-bg)}
   .cat{font-size:12px;padding:2px 8px;border-radius:6px;background:#eef4f9;color:#0b3d5c;white-space:nowrap}
   .cat-ent{background:#fdf2f4;color:#a3122b}
+  .srcb{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11px;font-weight:600;margin-right:6px;vertical-align:1px;white-space:nowrap}
+  .src-off{background:#e8f1fb;color:#0b3d5c}
+  .src-media{background:#eef2f7;color:#475569}
+  .src-plat{background:#fff4e5;color:#b45309}
+  .src-soc{background:#fdecef;color:#a3122b}
+  .social{margin-top:28px;scroll-margin-top:96px}
+  .social h2{font-size:18px;margin:0 0 6px}
+  .social .warn{color:#a3122b;font-size:12.5px;margin:0 0 12px;line-height:1.7}
+  .social-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .scard{background:#fff;border:1px solid #f3d2d8;border-left:4px solid #c8102e;border-radius:10px;padding:10px 12px}
+  .scard h3{margin:4px 0 6px;font-size:14px;line-height:1.45}
+  .scard p{margin:0 0 6px;font-size:12.5px;color:#475569;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .scard .meta{font-size:11.5px;color:var(--muted)}
   .hint{color:var(--muted);font-size:12.5px;margin:10px 2px 0}
   .empty{padding:40px;text-align:center;color:var(--muted)}
   .cards{display:none}
@@ -116,6 +129,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     h1{font-size:22px}
     .sub{font-size:12.5px;margin-bottom:14px}
     .stats{grid-template-columns:repeat(4,1fr);gap:8px}
+    .social-cards{grid-template-columns:1fr}
     .installBtn{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:999px;padding:7px 14px;font-size:13px}
     .stat{padding:8px 6px;border-radius:10px}
     .stat b{font-size:19px}
@@ -161,6 +175,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     <p class="sub">公开网络线索归集 · 每条可溯源 · 投诉人已脱敏 · 剔除官媒/官方已办结事项</p>
     <button id="installBtn" class="installBtn" type="button">安装到桌面</button>
     <div class="stats" id="stats"></div>
+    <div id="socialNote" class="hint" style="margin:10px 0 0"></div>
   </div>
 </header>
 <main class="wrap">
@@ -188,11 +203,17 @@ TEMPLATE = r"""<!DOCTYPE html>
   </div>
   <div id="cards" class="cards"></div>
   <p class="hint">点击任意一条查看诉求摘要、投诉人（脱敏）、承办单位、状态依据与原文链接。</p>
+  <section id="social" class="social">
+    <h2>社媒发现（未核验，请自行甄别）</h2>
+    <p class="warn">以下内容来自小红书等用户发帖，仅作线索发现，未经官方核实，不构成事实认定；请自行甄别，注意保护个人信息。</p>
+    <div id="socialCards" class="social-cards"></div>
+  </section>
 </main>
 <footer>
   <div class="wrap">
     <div id="gen"></div>
     <div style="margin-top:6px">数据来源：武汉市政府门户“来信公示”、委办局来信公示、武汉城市留言板、人民网领导留言板、黑猫投诉等公开页面。投诉人信息已按规范脱敏，不含身份证号、房号等敏感信息；内容仅反映公开页面记载，不构成对事实的最终认定。</div>
+    <div style="margin-top:6px">来源标签：<span class="srcb src-off">官方</span>政府/官方平台 · <span class="srcb src-media">媒体</span>官媒报道 · <span class="srcb src-plat">平台</span>黑猫等投诉平台 · <span class="srcb src-soc">社媒</span>用户发布，未核验</div>
     <div style="margin-top:6px">维护：服务器 systemd 定时任务，每 12 小时自动归集；台账与逐期报告见 GitHub 仓库。</div>
     <div style="margin-top:6px">__CB_STATUS__</div>
     <div style="margin-top:6px">访问不畅时：请稍后重试，或向分享者索取离线 HTML 文件（本站支持 PWA 离线查看）。</div>
@@ -202,6 +223,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   <button type="button" data-cat="" class="on"><b id="navAll">0</b>全部</button>
   <button type="button" data-cat="民生"><b id="navCivil">0</b>民生</button>
   <button type="button" data-cat="涉企"><b id="navEnt">0</b>涉企</button>
+  <button type="button" data-cat="__social"><b id="navSoc">0</b>社媒</button>
 </nav>
 <div class="modal" id="modal">
   <div class="panel">
@@ -219,6 +241,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 </div>
 <script>
 const DATA = __DATA__;
+const SOCIAL = __SOCIAL__;
 
 const esc = s => String(s == null ? "" : s)
   .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
@@ -239,6 +262,20 @@ const statusClass = s => {
 };
 
 const catClass = c => c === "涉企" ? "cat cat-ent" : "cat";
+
+function sourceType(x){
+  const ch = String(x.channel || "");
+  const fp = String(x.fingerprint || "");
+  if(/小红书|微博|抖音|贴吧/.test(ch) || fp.indexOf("xhs") === 0) return "社媒";
+  if(/黑猫/.test(ch)) return "平台";
+  if(/留言板|来信公示|政府|人民网|12345/.test(ch)) return "官方";
+  if(/日报|广电|新闻|极目|荆楚/.test(ch)) return "媒体";
+  return "其他";
+}
+function srcClass(x){
+  const t = sourceType(x);
+  return t === "官方" ? "src-off" : t === "媒体" ? "src-media" : t === "平台" ? "src-plat" : t === "社媒" ? "src-soc" : "src-media";
+}
 let sorted = DATA.slice();
 
 function sortBy(mode){
@@ -255,6 +292,7 @@ function cardHtml(x){
       <div class="top">
         <span class="badge ${statusClass(x.status)}">${esc(x.status)}</span>
         <span class="${catClass(x.category)}">${esc(x.category)}</span>
+        <span class="srcb ${srcClass(x)}">${sourceType(x)}</span>
         <span class="date">${esc(x.verify_level)} 级</span>
       </div>
       <h3>${esc(x.title)}</h3>
@@ -279,8 +317,26 @@ function initSelects(){
   });
 }
 
-function renderStats(list){
-  const total=list.length;
+function renderSocial(){
+  const el = document.getElementById("socialCards");
+  const note = document.getElementById("socialNote");
+  if(!SOCIAL.length){
+    el.innerHTML = '<div class="empty">本期暂无社媒发现</div>';
+    note.textContent = "";
+    document.getElementById("navSoc").textContent = "0";
+    return;
+  }
+  el.innerHTML = SOCIAL.map(s=>`<article class="scard">
+      <div class="top"><span class="srcb src-soc">${esc(s.platform||"社媒")}</span><span class="date">${esc(fmtDate(s.found_at))} 发现</span></div>
+      <h3>${esc(s.title)}</h3>
+      <p>${esc(s.summary)}</p>
+      <div class="meta">关键词：${esc(s.keyword||"")} · <a href="${esc(s.url)}" target="_blank" rel="noopener">查看原帖</a> · 未核验</div>
+    </article>`).join("");
+  note.textContent = `另有社媒发现 ${SOCIAL.length} 条（未核验，请自行甄别，见页面底部）`;
+  document.getElementById("navSoc").textContent = String(SOCIAL.length);
+}
+
+function renderStats(list){  const total=list.length;
   const civil=list.filter(x=>x.category==="民生").length;
   const ent=list.filter(x=>x.category==="涉企").length;
   const active=list.filter(x=>!/已办结|已解决/.test(x.status||"")).length;
@@ -315,7 +371,7 @@ function render(){
       <td class="id">${esc(x.id)}</td>
       <td><span class="${catClass(x.category)}">${esc(x.category)}</span></td>
       <td class="title">${esc(x.title)}</td>
-      <td class="src">${esc(x.channel)}</td>
+      <td class="src"><span class="srcb ${srcClass(x)}">${sourceType(x)}</span>${esc(x.channel)}</td>
       <td class="date">${esc(fmtDate(x.published_at))}</td>
       <td><span class="badge ${statusClass(x.status)}">${esc(x.status)}</span></td>
       <td class="date">${esc(x.verify_level)}</td>
@@ -388,6 +444,10 @@ function initNavCounts(){
 
 document.getElementById("bottomnav").addEventListener("click", e=>{
   const b = e.target.closest("button[data-cat]"); if(!b) return;
+  if(b.dataset.cat === "__social"){
+    document.getElementById("social").scrollIntoView({behavior:"smooth", block:"start"});
+    return;
+  }
   cat.value = b.dataset.cat || "";
   render();
   requestAnimationFrame(()=>{
@@ -416,7 +476,7 @@ document.addEventListener("click", e=>{
 });
 
 document.getElementById("gen").textContent = "生成时间：" + __GEN__ + " · 共 " + DATA.length + " 条 · 覆盖窗口 __WINDOW__";
-initSelects(); initNavCounts(); renderStats(sorted); render();
+initSelects(); initNavCounts(); renderStats(sorted); render(); renderSocial();
 
 let deferredPrompt = null;
 let installed = false;
@@ -479,6 +539,17 @@ def main() -> int:
         print("台账为空，先生成线索后再看板")
         return 1
 
+    social_rows = []
+    social_file = BASE / "数据" / "社媒发现.jsonl"
+    if social_file.exists():
+        for line in social_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line:
+                try:
+                    social_rows.append(json.loads(line))
+                except Exception:
+                    pass
+
     data_js = json.dumps(rows, ensure_ascii=False).replace("</", "<\\/")
     gen = datetime.now().strftime("%Y-%m-%d %H:%M")
     window = "2026-10-26 至 2026-11-25"
@@ -496,6 +567,7 @@ def main() -> int:
 
     html_text = (
         TEMPLATE.replace("__DATA__", data_js)
+        .replace("__SOCIAL__", json.dumps(social_rows, ensure_ascii=False).replace("</", "<\\/"))
         .replace("__GEN__", json.dumps(gen, ensure_ascii=False))
         .replace("__WINDOW__", window)
         .replace("__CB_STATUS__", cb_status)

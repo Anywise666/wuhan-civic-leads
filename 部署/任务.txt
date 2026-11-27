@@ -7,7 +7,7 @@
 - 数据/剔除记录.jsonl：已剔除事项
 
 二、采集（12–18 次调用）
-必查：① 市政府来信公示 https://www.wuhan.gov.cn/hdjl/lxgs/ 及 index_1、index_2；② 至少 2 个委办局来信公示（教育局 https://jyj.wuhan.gov.cn/hdjl_7/lxgs/ 、住建局 https://zgj.wuhan.gov.cn/hdjl_44/lxgs_/ 等）；③ 武汉城市留言板 https://liuyan.cjn.cn/；④ 人民网领导留言板、12345 官方内容，或 12345 未解决诉求的媒体公开报道（荆楚网/湖北日报/大武汉/武汉广电《接诉即办》，用「多次投诉/办结不满意/久拖未决」检索）；⑤ 1 个社会投诉平台；⑥ 涉企专项检索 2 条。窗口最近 14 天。
+必查：① 市政府来信公示 https://www.wuhan.gov.cn/hdjl/lxgs/ 及 index_1、index_2；② 至少 2 个委办局来信公示（教育局 https://jyj.wuhan.gov.cn/hdjl_7/lxgs/ 、住建局 https://zgj.wuhan.gov.cn/hdjl_44/lxgs_/ 等）；③ 武汉城市留言板 https://liuyan.cjn.cn/；④ 人民网领导留言板、12345 官方内容，或 12345 未解决诉求的媒体公开报道（荆楚网/湖北日报/大武汉/武汉广电《接诉即办》，用「多次投诉/办结不满意/久拖未决」检索）；⑤ 1 个社会投诉平台；⑥ 涉企专项检索 2 条；⑦ 小红书社媒检索 2–3 条（site:xiaohongshu.com 武汉 投诉/避雷/退费），只记搜索摘要，不进主台账。窗口最近 14 天。
 
 三、判定
 只保留：未办结、处理中、已回复未办结、办结不满意、超期未回复。
@@ -28,4 +28,5 @@
 2) 新增条目追加到 数据/线索台账.jsonl（一行一条 JSON，不改已有行），字段含 page_date 与 post_time；状态变化追加 status_history。
 3) 剔除事项追加到 数据/剔除记录.jsonl。
 4) 写入完成后 read 回读核对：每条有原文链接、已脱敏、状态有依据句。
-5) 不要执行 git 命令，推送由外层脚本完成；本期 0 条也要如实输出，不得凑数。
+5) 社媒发现写入 数据/社媒发现.jsonl（字段 platform/title/summary≤100字/url/keyword/found_at/status=未核验），不进主台账；报告单列「社媒发现（未核验）」并提示自行甄别。
+6) 不要执行 git 命令，推送由外层脚本完成；本期 0 条也要如实输出，不得凑数。
