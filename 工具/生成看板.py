@@ -84,6 +84,9 @@ TEMPLATE = r"""<!DOCTYPE html>
   .src-media{background:#eef2f7;color:#475569}
   .src-plat{background:#fff4e5;color:#b45309}
   .src-soc{background:#fdecef;color:#a3122b}
+  .plat-xhs{background:#fdecef;color:#a3122b}
+  .plat-wb{background:#fff1e6;color:#c2410c}
+  .plat-dy{background:#eef0f4;color:#111827}
   .social{margin-top:28px;scroll-margin-top:96px}
   .social h2{font-size:18px;margin:0 0 6px}
   .social .warn{color:#a3122b;font-size:12.5px;margin:0 0 12px;line-height:1.7}
@@ -276,6 +279,13 @@ function srcClass(x){
   const t = sourceType(x);
   return t === "官方" ? "src-off" : t === "媒体" ? "src-media" : t === "平台" ? "src-plat" : t === "社媒" ? "src-soc" : "src-media";
 }
+function platClass(p){
+  const s = String(p || "");
+  if(/小红书/.test(s)) return "plat-xhs";
+  if(/微博/.test(s)) return "plat-wb";
+  if(/抖音|快手/.test(s)) return "plat-dy";
+  return "src-soc";
+}
 let sorted = DATA.slice();
 
 function sortBy(mode){
@@ -327,7 +337,7 @@ function renderSocial(){
     return;
   }
   el.innerHTML = SOCIAL.map(s=>`<article class="scard">
-      <div class="top"><span class="srcb src-soc">${esc(s.platform||"社媒")}</span><span class="date">${esc(fmtDate(s.found_at))} 发现</span></div>
+      <div class="top"><span class="srcb ${platClass(s.platform)}">${esc(s.platform||"社媒")}</span><span class="date">${esc(fmtDate(s.found_at))} 发现</span></div>
       <h3>${esc(s.title)}</h3>
       <p>${esc(s.summary)}</p>
       <div class="meta">关键词：${esc(s.keyword||"")} · <a href="${esc(s.url)}" target="_blank" rel="noopener">查看原帖</a> · 未核验</div>
