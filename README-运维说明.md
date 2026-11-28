@@ -2,21 +2,24 @@
 
 ## 环境事实（实测）
 
-- 服务器：`172.32.18.2:22`，root，密钥 `~/.ssh/id_ed25519`（本地 Windows 路径 `C:\Users\KZ\.ssh\id_ed25519`）
+- 服务器：`172.32.18.2:22`，root。
+  - 旧笔记本 KZ：密钥 `C:\Users\KZ\.ssh\id_ed25519`（历史路径）。
+  - 家里 NUC（2026-11-28 起）：专用密钥 `C:\Users\NUC\AppData\Local\wuhan-maintain\id_ed25519`（公钥已加进服务器 `/root/.ssh/authorized_keys`，注释 `nuc-verify-2026-11-28`）。此密钥在持久目录、不在 D 盘沙箱区，权限正常。
+  - 连接命令（务必带 `IdentitiesOnly=yes`，否则 SSH 会尝试 agent 里其他密钥导致 Permission denied）：
+    ```
+    ssh -o IdentitiesOnly=yes -i C:\Users\NUC\AppData\Local\wuhan-maintain\id_ed25519 root@172.32.18.2
+    ```
+    Windows 自带 OpenSSH 在 `C:\Windows\System32\OpenSSH\ssh.exe`。
 - 系统：CentOS 8.5.2111，glibc 2.28，kernel 4.18（Node 官方 Tier 1 最低线，刚好够）
 - 硬件：40 核 / 30G 内存 / 66G 可用磁盘
 - **隔离安装**：Node **v24.22.3** 在 `/opt/node24`，dsh `0.2.2-rc.5` 全局装在其下；系统 Node 18 (`/usr/bin/node`) 不动，小程序 `/opt/aigc/server/app.js` 与 hannews `/opt/hannews-adp/server/src/app.js` 不受影响（实测两个进程仍存活、minio active）
 - 工作目录：`/opt/wuhan-leads`，含 `规则/ 工具/ 数据/ reports/ logs/`
 - 专用 deploy key：`/opt/wuhan-leads/.ssh_deploy_key`（公钥 `.pub`），git 配置 `/opt/wuhan-leads/.ssh_config`
 
-## 还差你做的两件事（阻塞项）
+## 两项已完成（2026-11-28）
 
-1. **DeepSeek API Key**：把 key 写入服务器 `/etc/wuhan-leads.env`：
-   ```
-   DEEPSEEK_API_KEY=sk-你的key
-   ```
-   权限 `chmod 600`。不进代码、不进 git。
-2. **GitHub Deploy key 上线**：把 `/opt/wuhan-leads/.ssh_deploy_key.pub` 的内容贴到目标仓库 `Settings → Deploy keys → Add deploy key`，**勾选 "Allow write access"**。仓库地址告诉我，我配 remote。
+1. ~~DeepSeek API Key~~ 已弃用：模型改走 WorkBuddy 免费桥（默认 `hy4flash-free`，credit=0），见 [部署/服务器WorkBuddy改造.md](部署/服务器WorkBuddy改造.md)。原 `DEEPSEEK_API_KEY` 行仍保留在 `/etc/wuhan-leads.env` 作备用，回滚方法见该文档。
+2. ~~GitHub Deploy key 上线~~ 已完成：`/opt/wuhan-leads/.ssh_deploy_key` 已配 remote 并验证可推送；run.sh 推送前加 `git fetch && git rebase origin/main`，双机维护不再冲突。
 
 ## 素材同步
 
