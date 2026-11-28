@@ -130,7 +130,7 @@ git rebase origin/main
 
 **默认模型仍是免费**：`cordis.patch.yml` 默认 `hy4flash-free`（usage.credit=0），只在它被限流的那几小时临时降级；正常一轮约 20 次调用，远不会触发限流。教训是验证阶段别用收费模型跑完整轮。
 
-**顺带修复 rebase 误报**：run.sh 推送段原顺序是「rebase 后 add」，看板重新生成的文件处于未暂存状态，导致 rebase 报 `cannot rebase: You have unstaged changes` 并记假失败（但后续 add→commit→push 其实成功）。已改为「先 add 再 rebase」，消除误报。
+**顺带根治 rebase 误报**：run.sh 推送段原本在提交前 rebase，但 `git rebase` 要求**工作区和暂存区都干净**——「rebase 后 add」会撞 `unstaged changes`，「add 后 rebase」会撞 `index contains uncommitted changes`，都记假失败（数据其实靠后续 push 成功同步）。最终改为正确顺序 **add → commit → fetch → rebase → push**：先提交让两区都干净再 rebase，已在隔离临时仓库复刻「本地有未提交改动 + 远端有新提交」场景实测通过（REBASE_OK、PUSHED=1、无误报）。注意服务器 git 版本较老，`git init` 不支持 `-b`，测试要用 `git symbolic-ref HEAD refs/heads/main`。
 
 **查看限流状态**：
 ```bash
