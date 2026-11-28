@@ -22,27 +22,13 @@ if ! curl -sS -o /dev/null http://127.0.0.1:8790/health 2>/dev/null; then
   systemctl start wb-bridge.service 2>/dev/null || true
   sleep 3
 fi
-# 账号级频率限制熔断：429(code 6004) 冷却期间跳过本轮，避免无效运行与刷屏报错
-if command -v python3 >/dev/null 2>&1; then
-  COOLDOWN=$(curl -sS --max-time 5 http://127.0.0.1:8790/health 2>/dev/null | python3 -c '
-import json,sys,datetime
-try:
-    d=json.load(sys.stdin)
-    qm=d.get("rateLimit",{}).get("quotaModels",[]) or []
-    now=datetime.datetime.now(datetime.timezone.utc)
-    for m in qm:
-        r=m.get("resetAt")
-        if r:
-            t=datetime.datetime.fromisoformat(r.replace("Z","+00:00"))
-            if t>now:
-                print(int(t.timestamp())); break
-except Exception:
-    pass
-' 2>/dev/null)
-  if [ -n "${COOLDOWN:-}" ]; then
-    echo "$(date '+%F %T') WorkBuddy 账号频率限制中，重置 $(date -d @${COOLDOWN} '+%F %T' 2>/dev/null)，跳过本轮" >> logs/error.log
-    exit 0
-  fi
+# 账号级频率限制熔断：探测一次极小请求，429(code 6004) 冷却期间跳过本轮
+PROBE=$(curl -sS --max-time 20 http://127.0.0.1:8790/v1/chat/completions \
+  -H "Authorization: Bearer ${WORKBUDDY_BRIDGE_TOKEN}" -H "Content-Type: application/json" \
+  --data-binary '{"model":"hy4flash-free","messages":[{"role":"user","content":"x"}],"max_tokens":1}' 2>/dev/null)
+if echo "${PROBE}" | grep -qE '6004|429|频率限制|超出频率|不可用'; then
+  echo "$(date '+%F %T') WorkBuddy 账号频率限制中，跳过本轮；下次 timer 自动重试" >> logs/error.log
+  exit 0
 fi
 
 LOG="logs/run-$(date +%F_%H%M).log"
