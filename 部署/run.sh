@@ -22,13 +22,29 @@ if ! curl -sS -o /dev/null http://127.0.0.1:8790/health 2>/dev/null; then
   systemctl start wb-bridge.service 2>/dev/null || true
   sleep 3
 fi
-# 账号级频率限制熔断：探测一次极小请求，429(code 6004) 冷却期间跳过本轮
-PROBE=$(curl -sS --max-time 20 http://127.0.0.1:8790/v1/chat/completions \
-  -H "Authorization: Bearer ${WORKBUDDY_BRIDGE_TOKEN}" -H "Content-Type: application/json" \
-  --data-binary '{"model":"hy4flash-free","messages":[{"role":"user","content":"x"}],"max_tokens":1}' 2>/dev/null)
-if echo "${PROBE}" | grep -qE '6004|429|频率限制|超出频率|不可用'; then
-  echo "$(date '+%F %T') WorkBuddy 账号频率限制中，跳过本轮；下次 timer 自动重试" >> logs/error.log
-  exit 0
+# 模型兜底：免费 hy4flash-free 被账号级 429 限流时，切到同名低成本 hy4flash (x0.03) 保证定时执行
+PATCH=/root/.dsh/profiles/headless/cordis.patch.yml
+PROBE_MODEL() {
+  curl -sS --max-time 20 http://127.0.0.1:8790/v1/chat/completions \
+    -H "Authorization: Bearer ${WORKBUDDY_BRIDGE_TOKEN}" -H "Content-Type: application/json" \
+    --data-binary "{\"model\":\"$1\",\"messages\":[{\"role\":\"user\",\"content\":\"x\"}],\"max_tokens\":1}" 2>/dev/null
+}
+restore_model() {
+  if [ -f "${PATCH}.fallback-bak" ]; then
+    mv -f "${PATCH}.fallback-bak" "${PATCH}"
+  fi
+}
+if PROBE_MODEL hy4flash-free | grep -qE '6004|429|频率限制|超出频率|不可用'; then
+  echo "$(date '+%F %T') hy4flash-free 被限流，尝试兜底 hy4flash (x0.03)" >> logs/error.log
+  if PROBE_MODEL hy4flash | grep -qE '6004|429|频率限制|超出频率|不可用'; then
+    echo "$(date '+%F %T') hy4flash 也被限流，跳过本轮；下次 timer 自动重试" >> logs/error.log
+    exit 0
+  fi
+  # 两个模型都探测通过后才临时切换；trap 保证本期结束/异常都恢复默认
+  cp -a "${PATCH}" "${PATCH}.fallback-bak"
+  trap restore_model EXIT
+  sed -i 's/model: hy4flash-free/model: hy4flash/' "${PATCH}"
+  echo "$(date '+%F %T') 已临时切换默认模型为 hy4flash (x0.03)，本期结束后恢复" >> logs/error.log
 fi
 
 LOG="logs/run-$(date +%F_%H%M).log"
