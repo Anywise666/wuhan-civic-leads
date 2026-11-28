@@ -1,0 +1,295 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0"><meta http-equiv=X-UA-Compatible content="IE=edge"><title>武汉城市留言板</title><meta name=keywords content=长江网武汉城市留言板，武汉城市留言板，城市留言板，长江网，留言板><meta name=description content=长江网武汉城市留言板，武汉城市留言板，城市留言板，长江网，留言板，武汉城市留言板是武汉市网上群众工作部官方互联网平台，由中央网信办批准的全国重点新闻网站长江网(www.cjn.cn)负责运营。><link href=/static/font-awesome-4.7.0/css/font-awesome.min.css rel=stylesheet><link href=http://www.cjn.cn/favicon.ico rel="shortcut icon"><link rel=stylesheet href=/static/css/mtcx.css><link href=/static/css/boot.css rel=stylesheet><script>var _hmt = _hmt || [];
+      (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?a52c172a12c6674c6c6ac8a2a2b94919";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();</script><link href=/static/css/app.8a34ef1ba92951931b5aa41b20c622d7.css rel=stylesheet></head><body><div id=app></div><div id=lastOne></div><script type=text/javascript src="https://webapi.amap.com/maps?v=1.3&key=a4ce2e419b7f6b7dc8467276250adbb2"></script><script type=text/javascript src=/static/js/manifest.2ae2e69a05c33dfc65f8.js></script><script type=text/javascript src=/static/js/vendor.0050bfd061aedba6426e.js></script><script type=text/javascript src=/static/js/app.5a33c14fe382b9be18ed.js></script></body></html><script src=/static/js/jq.js></script><script src=/static/js/boot.js></script><style>/* html{
+    filter: grayscale(100%);
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+    filter:progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+    -webkit-filter: grayscale(1);}  */
+  /* html { filter:progid:DXImageTransform.Microsoft.BasicImage(grayscale=1); } */
+  input[type=file]{
+    display: none;
+  }
+  .h4, h4{
+    font-size: 14px;
+  }
+  .el-date-editor .el-range-separator{
+    width: auto;
+  }
+  .el-date-editor .el-range-separator{
+    width: 30px;
+  }
+  .btn{
+    padding: 0;
+    line-height: 40px;
+    font-size: 16px;
+  }
+  .navbar-default .navbar-brand:hover{
+    color: #fff;
+  }
+  .errbox{
+    width: 600px;
+    height: 320px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -160px;
+    margin-left: -300px;
+  }
+  .bigtil{
+    font-size: 22px;
+    text-align: center;
+  }
+  .minTil{
+    font-size: 14px;
+    text-align: center;
+    color: #666;
+    margin-top: 10px;
+  }
+  .ewmBox{
+    width: 620px;
+    height: 225px;
+    border:1px solid #e8e8e8;
+    margin: 20px auto;
+    overflow: hidden;
+    padding: 30px 50px;
+
+  }
+  .ewmBox{
+    text-align: center;
+  }
+  .ewmIMg{
+    width: 139px;
+    height: 139px;
+  }
+  .ewmIMg img{
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .ewmL{
+    float: left;
+  }
+  .xcxbox{
+    margin-left: 50px;
+  }
+  .ewmR{
+    float: right;
+  }
+  .phonebox{
+    display: none;
+  }
+  @media screen and (max-width: 1200px){
+    .el-upload-dragger {
+        width: 170px;
+        height: 170px;
+    }
+    .el-input {
+
+    }
+      /* 设置滚动条的样式 */
+      ::-webkit-scrollbar {
+      width:2px;
+      height: 2px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      }
+
+      /* 滚动槽 */
+      ::-webkit-scrollbar-track {
+      border-radius:10px;
+      }
+
+      /* 滚动条滑块 */
+      ::-webkit-scrollbar-thumb {
+      border-radius:10px;
+      background:#c80007;
+      }
+      .highLightKeywords{
+        color: #ff0009;
+        font-weight: bold;
+      }
+
+      .box .code .el-form-item__label{
+        display: contents;
+      }
+      .el-input__inner{
+        /* line-height: 82px; */
+        /* font-size: 24px; */
+        /* height: 82px; */
+      }
+      .btn{
+        color: #fff;
+      }
+      .btn button{
+        width: 100%;
+        /* font-size: 32px; */
+        /* height: 82px; */
+      }
+      #app .el-form-item__error{
+        /* font-size: 24px; */
+        left: 0;
+      }
+      .el-form-item{
+        margin-bottom: 10px;
+      }
+      .el-form-item.is-error .el-input__validateIcon{
+        /* font-size: 24px; */
+      }
+      .form .el-form-item__label{
+        /* width: 50%; */
+        /* font-size: 24px; */
+        text-align: left;
+      }
+      .el-checkbox__label{
+        /* font-size: 24px; */
+      }
+      .el-checkbox__inner{
+        /* width: 24px;
+        height: 24px;
+        line-height: 24px;
+        text-align: center; */
+      }
+      .el-textarea__inner{
+        /* font-size: 24px; */
+        height: auto;
+      }
+      .msgInfo .el-card__header{
+          /* font-size: 24px; */
+      }
+      .el-pagination__editor.el-input .el-input__inner{
+        height: 52px;
+        width: 100px;
+      }
+      .ly-emotion img{
+          display: block;
+          width: 100%;
+          height: 100%;
+      }
+      .el-select{
+        width: 100%;
+      }
+      .emotion-box{
+          height: 500px;
+      }
+      .list_title .titlenr span{
+        color: #c80007;
+      }
+      .viewxq .el-dialog{
+        width: 80%;
+      }
+      .viewxq .el-radio__inner{
+        width: 28px;
+        height: 28px;
+      }
+      .el-cascader__dropdown{
+        /* width: 96%; */
+      }
+      .el-cascader-node__label{
+        width: 100px;
+      }
+      .el-checkbox__inner::after{
+        /* width: 10px;
+        height: 12px; */
+      }
+      .viewxq .el-checkbox:last-child{
+        margin-top: 20px;
+      }
+      .el-form-item{
+        margin-bottom: 10px;
+      }
+      .call .el-form-item{
+        /* margin-bottom: 40px; */
+      }
+      .xgmm .el-form-item__content{
+        text-align: center;
+      }
+      .el-textarea{
+        overflow: hidden;
+      }
+      .phonebox{
+        display: block;
+      }
+      .pcbox{
+        display: none;
+      }
+      .phonebox_inline{
+        display: inline-block;
+      }
+      .pcbox_inline{
+        display: none;
+      }
+      .el-upload-dragger{
+        width: 85px;
+        height: 85px;
+        float: right;
+      }
+      .form_list{
+        width: 100%;
+      }
+      .form_list .fll{
+        width: 100%;
+      }
+      .el-upload{
+        width: 100%;
+        margin-top: 15px;
+      }
+      .el-upload-list{
+        position: relative;
+      }
+      .el-icon-close{
+        display: block;
+      }
+      .el-upload-list__item .el-icon-close{
+        display: block;
+      }
+      .top{
+        padding-left: 10px;
+      }
+
+  }</style><script>var ie=IEVersion();
+    console.log(ie)
+    if(ie<10){
+      var tag='<div class="errbox"><div class="bigtil">浏览器版本过低，请升级浏览器</div><div class="minTil">您可以通过手机扫描以下二维码进行留言</div><div class="ewmBox"><div class="ewmL"><div class="ewmIMg"><img src="static/images/webewm.png"><p>手机浏览器</p></div></div><div class="ewmL xcxbox"><div class="ewmIMg"><img src="static/images/wxxcx.jpg"><p>微信小程序</p></div></div><div class="ewmR"><div class="ewmIMg"><img src="static/images/top_ewm.png"><p>微信公众号</p></div></div></div></div>'
+      $('#app').html(tag)
+
+      // alert("浏览器版本过低，请升级浏览器")
+    }
+    function IEVersion() {
+      var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串
+      var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
+      var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
+      var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf("rv:11.0") > -1;
+      if(isIE) {
+      var reIE = new RegExp("MSIE (\\d+\\.\\d+);");
+      reIE.test(userAgent);
+      var fIEVersion = parseFloat(RegExp["$1"]);
+      console.log(fIEVersion)
+      if(fIEVersion == 7) {
+      return 7;
+      } else if(fIEVersion == 8) {
+      return 8;
+      } else if(fIEVersion == 9) {
+      return 9;
+      } else if(fIEVersion == 10) {
+      return 10;
+      } else {
+      return 6;//IE版本<=7
+      }
+      } else if(isEdge) {
+      return 'edge';//edge
+      } else if(isIE11) {
+      return 11; //IE11
+      }else{
+      return 15;//不是ie浏览器
+      }
+    }</script><script>$(document).scroll(function () {
+    $("#lastOne").nextAll().find("iframe").remove();
+  });</script>

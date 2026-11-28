@@ -1,0 +1,104 @@
+
+<!doctype html>
+<html>
+<head>
+    
+    <title>黑猫投诉_新浪旗下消费者服务平台</title>
+
+    <meta charset="UTF-8">
+    
+        <meta name="keywords" content="315投诉,315投诉维权,315消费投诉,315消费维权,315黑猫投诉,315,集体投诉,商家投诉" />
+    
+    
+    <meta name="description" content="黑猫投诉是新浪旗下消费者服务平台,这里列举所有相关法规,为您的消费维权提供参考。"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <!-- 强制竖屏 -->
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <!-- 关闭电话识别 -->
+    <meta name="format-detection" content="telephone=no">
+    <!-- 百度禁止转码 -->
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <!-- 添加到主屏后的标题 -->
+    <meta name="apple-mobile-web-app-title" content="黑猫投诉">
+    <!-- dns预解析 -->
+    <link rel="dns-prefetch" href="http://n.sinaimg.cn">
+    <!-- add to homescreen -->
+    <link rel="apple-touch-icon" href="//n.sinaimg.cn/finance/blackcat/wap/img/icon-desk.jpeg" />
+
+    
+    <link href="//n.sinaimg.cn/finance/blackcat/wap/css/help.css?v=2.3.214" rel="stylesheet">
+    <style>
+        body{background-color: #ffffff;}
+        .error_div{padding: 1.48rem 0 3rem;}
+        .error_div .pic{text-align: center;}
+        .error_div img{width: 4.22rem;margin-left: 0.25rem;}
+        .error_div .txt{font-size: 0.3rem;line-height: 0.36rem;text-align: center;color: #666666;margin: 0 0.32rem;}
+    </style>
+
+    <script src="//n.sinaimg.cn/finance/guba-h5/js/jq.pkg.js?v=1.0" charset="utf-8"></script>
+    <script type="text/javascript">
+        (function(doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function() {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    docEl.style.fontSize = 100 * (clientWidth / 750) + 'px';
+                };
+            if (!doc.addEventListener) return;
+            recalc();
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window);
+
+      //   $.getScript('//n.sinaimg.cn/finance/mina_share/wx_share.js', function () {
+      //       WX_SHARE.init({
+      //           title: '',
+      //           imgUrl: window.location.protocol + '//n.sinaimg.cn/finance/blackcat/pc/IMG_4602.JPG'
+      //       });
+      //   });
+    </script>
+    <script>
+        var baseUrl="//tousu.sina.cn/api/";
+    </script>
+    
+</head>
+
+<body>
+
+
+
+    <section class="blackcat-head">
+        <div class="txt">黑猫投诉</div>
+        <div class="u-btn-back js-back"></div>
+    </section>
+    <!--blackcat-help  start-->
+    <div class="error_div">
+        <p class="pic"><img src="//n.sinaimg.cn/tech/hmapp/wap_404.png" alt=""></p>
+        <p class="txt">页面不存在，3秒后将返回黑猫投诉首页</p>
+    </div>
+    <!--blackcat-help  end-->
+
+
+
+<script type="text/javascript" src="//mjs.sinaimg.cn/umd/base-tools-SUDA/1.1.20/index.min" integrity="sha384-qmS369WwgvEcDJJebpURcvqRw8OrPayY8S/siR+otJCdFi95oM/NSJPc/xo1p+Q/" crossorigin="anonymous"></script>
+<script type="text/javascript" src="//mjs.sinaimg.cn/wap/module/login/js/outlogin_layer_mobile.min.js"></script>
+<script type="text/javascript" src="//mjs.sinaimg.cn/wap/module/share/201507071535/js/waplogin.min.js"></script>
+<script type="text/javascript" src="//n.sinaimg.cn/finance/blackcat/wap/js/vender.js?v=2.3.214"></script>
+<!-- 点击地图 -->
+<script type="text/javascript" src="//www.sinaimg.cn/unipro/pub/suda_m_v634.js"></script>
+<script type="text/javascript">suds_init(4076,100.0000,1015,2);</script>
+<script type="text/javascript" src="//n.sinaimg.cn/finance/blackcat/wap/js/heimaoCommon.js?v=2.3.214"></script>
+
+    <script type="text/javascript" src="//n.sinaimg.cn/finance/blackcat/wap/js/help.js?v=2.3.214"></script>
+    <script>
+        setTimeout(function(){
+            location.href = "https://tousu.sina.cn/"
+        },3000)
+    </script>
+
+
+</body>
+</html>
