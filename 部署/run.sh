@@ -104,24 +104,24 @@ fi
 KEY="${APP}/.ssh_deploy_key"
 [ -f "${KEY}" ] || KEY=/root/.ssh/wuhan_deploy
 export GIT_SSH_COMMAND="ssh -i ${KEY} -o IdentitiesOnly=yes -o UserKnownHostsFile=/root/.ssh/known_hosts"
-# 先暂存本轮改动，再同步远端 rebase：工作区干净时 rebase 才不会误报「unstaged changes」
+# 先提交让工作区和暂存区都干净，再 rebase（git rebase 要求两者都干净）
 git add -A >> "${LOG}" 2>&1
+if ! git diff --cached --quiet; then
+  git -c user.name="wuhan-leads-agent" -c user.email="agent@users.noreply.github.com" \
+      commit -m "自动归集 $(date '+%F %H:%M')" >> "${LOG}" 2>&1
+fi
 git fetch origin main >> "${LOG}" 2>&1 || true
 if ! git rebase origin/main >> "${LOG}" 2>&1; then
   echo "$(date '+%F %T') rebase 冲突，abort 后仍尝试推送" >> logs/error.log
   git rebase --abort 2>/dev/null || true
 fi
-if ! git diff --cached --quiet; then
-  git -c user.name="wuhan-leads-agent" -c user.email="agent@users.noreply.github.com" \
-      commit -m "自动归集 $(date '+%F %H:%M')" >> "${LOG}" 2>&1
-  pushed=0
-  for attempt in 1 2 3 4 5; do
-    if git push origin main >> "${LOG}" 2>&1; then pushed=1; break; fi
-    echo "$(date '+%F %T') push attempt ${attempt} failed" >> logs/error.log
-    sleep $((attempt * 10))
-  done
-  [ "${pushed}" = "1" ] || echo "$(date '+%F %T') push failed after retries; next run retries" >> logs/error.log
-fi
+pushed=0
+for attempt in 1 2 3 4 5; do
+  if git push origin main >> "${LOG}" 2>&1; then pushed=1; break; fi
+  echo "$(date '+%F %T') push attempt ${attempt} failed" >> logs/error.log
+  sleep $((attempt * 10))
+done
+[ "${pushed}" = "1" ] || echo "$(date '+%F %T') push failed after retries; next run retries" >> logs/error.log
 
 echo "$(date '+%F %T') done rc=${RC}" >> "${LOG}"
 exit ${RC}
