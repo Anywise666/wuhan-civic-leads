@@ -10,6 +10,7 @@
     ssh -o IdentitiesOnly=yes -i C:\Users\NUC\AppData\Local\wuhan-maintain\id_ed25519 root@172.32.18.2
     ```
     Windows 自带 OpenSSH 在 `C:\Windows\System32\OpenSSH\ssh.exe`。
+  - **服务器 `/root/.ssh/authorized_keys` 现有 4 把公钥**（2026-11-28 核查，均有效、近期有登录）：① `kevinzhwq@Gitee`（指纹 `2uvhJAOt…`，Gitee 系，早期多出口 IP 用过）；② `gitee`（`DqecBh7B…`，Gitee 系）；③ `nuc-workbuddy`（`JPYZOPZC…`，NUC 旧密钥）；④ `nuc-verify-2026-11-28`（`4Mzs+DEH0…`，当前 NUC 持久密钥）。另有备份 `authorized_keys.bak-20261126`（3 把）。VPN 出口 IP 会变，不必按 IP 对应机器。
 - 系统：CentOS 8.5.2111，glibc 2.28，kernel 4.18（Node 官方 Tier 1 最低线，刚好够）
 - 硬件：40 核 / 30G 内存 / 66G 可用磁盘
 - **隔离安装**：Node **v24.22.3** 在 `/opt/node24`，dsh `0.2.2-rc.5` 全局装在其下；系统 Node 18 (`/usr/bin/node`) 不动，小程序 `/opt/aigc/server/app.js` 与 hannews `/opt/hannews-adp/server/src/app.js` 不受影响（实测两个进程仍存活、minio active）

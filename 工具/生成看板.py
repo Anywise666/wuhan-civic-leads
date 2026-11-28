@@ -6,6 +6,7 @@ r"""生成单文件线索看板：数据\线索台账.jsonl -> 看板\index.html
 产物不依赖网络与外部资源，可直接双击打开、发微信/邮件，或由静态服务器托管。
 """
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -13,6 +14,32 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parent.parent
 LEDGER = BASE / "数据" / "线索台账.jsonl"
 OUT = BASE / "看板" / "index.html"
+
+# 看板展示上限：台账数据仍全量累积（历史档案，不删行），
+# 只限制嵌入 HTML 的条数，避免上万条时前端卡顿。
+# 保留「最近 DISPLAY_CAP 条」+「全部在办条目」的并集，确保老的在办线索不被截掉。
+DISPLAY_CAP = 500
+
+def is_open(x):
+    """在办判定，与前端 statusClass 保持一致：不含「已办结/已解决」即在办。"""
+    s = str(x.get("status") or "")
+    return not bool(re.search(r"已办结|已解决", s))
+
+def cap_rows(rows):
+    """返回 (展示用子集, 说明文本)。台账全量仍在 rows，不改动。"""
+    total = len(rows)
+    if total <= DISPLAY_CAP:
+        return rows, f"台账共 {total} 条"
+    recent = rows[-DISPLAY_CAP:]
+    open_all = [x for x in rows if is_open(x)]
+    # 按 id 去重、保持原文件顺序（台账本身按时间追加）
+    by_id = {}
+    for x in recent:
+        by_id.setdefault(x.get("id"), x)
+    for x in open_all:
+        by_id.setdefault(x.get("id"), x)
+    capped = [x for x in rows if x.get("id") in by_id]
+    return capped, f"看板显示 {len(capped)} 条（最近 {DISPLAY_CAP} 条 + 全部在办）/ 台账共 {total} 条"
 
 TEMPLATE = r"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -602,8 +629,9 @@ def main() -> int:
                 except Exception:
                     pass
 
-    data_js = json.dumps(rows, ensure_ascii=False).replace("</", "<\\/")
-    gen = datetime.now().strftime("%Y-%m-%d %H:%M")
+    display_rows, cap_note = cap_rows(rows)
+    data_js = json.dumps(display_rows, ensure_ascii=False).replace("</", "<\\/")
+    gen = datetime.now().strftime("%Y-%m-%d %H:%M") + " · " + cap_note
     window = "2026-10-26 至 2026-11-25"
 
     cb_status = "国内镜像（CloudBase）：暂未配置"
@@ -626,7 +654,7 @@ def main() -> int:
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(html_text, encoding="utf-8")
-    print(f"已生成 {len(rows)} 条 -> {OUT}")
+    print(f"已生成 {len(display_rows)} 条（台账共 {len(rows)} 条）-> {OUT}")
     return 0
 
 
