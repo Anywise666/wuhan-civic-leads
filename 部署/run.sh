@@ -12,9 +12,15 @@ mkdir -p logs
 
 if [ -f /etc/wuhan-leads.env ]; then set -a; . /etc/wuhan-leads.env; set +a; fi
 if [ -f "${APP}/.env" ]; then set -a; . "${APP}/.env"; set +a; fi
-if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
-  echo "$(date '+%F %T') DEEPSEEK_API_KEY 未设置，跳过" >> logs/error.log
+if [ -z "${WORKBUDDY_BRIDGE_TOKEN:-}" ]; then
+  echo "$(date '+%F %T') WORKBUDDY_BRIDGE_TOKEN 未设置，跳过" >> logs/error.log
   exit 2
+fi
+# WorkBuddy 桥健康检查（模型走本地 8790 端口）
+if ! curl -sS -o /dev/null http://127.0.0.1:8790/health 2>/dev/null; then
+  echo "$(date '+%F %T') WorkBuddy 桥未就绪，尝试拉起" >> logs/error.log
+  systemctl start wb-bridge.service 2>/dev/null || true
+  sleep 3
 fi
 
 LOG="logs/run-$(date +%F_%H%M).log"

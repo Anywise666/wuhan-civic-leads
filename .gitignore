@@ -7,3 +7,5 @@ __pycache__/
 logs/
 .deploy-site/
 
+wb-bridge/
+部署/*.bak-workbuddy
