@@ -214,7 +214,7 @@
     <div style="margin-top:6px">数据来源：武汉市政府门户“来信公示”、委办局来信公示、武汉城市留言板、人民网领导留言板、黑猫投诉等公开页面。投诉人信息已按规范脱敏，不含身份证号、房号等敏感信息；内容仅反映公开页面记载，不构成对事实的最终认定。</div>
     <div style="margin-top:6px">来源标签：<span class="srcb src-off">官方</span>政府/官方平台 · <span class="srcb src-media">媒体</span>官媒报道 · <span class="srcb src-plat">平台</span>黑猫等投诉平台 · <span class="srcb src-soc">社媒</span>用户发布，未核验</div>
     <div style="margin-top:6px">维护：服务器 systemd 定时任务，每 12 小时自动归集；台账与逐期报告见 GitHub 仓库。</div>
-    <div style="margin-top:6px">国内镜像（CloudBase）最近同步：2026-11-28 15:59 ✅</div>
+    <div style="margin-top:6px">国内镜像（CloudBase）最近同步：2026-11-28 16:58 ✅</div>
     <div style="margin-top:6px">访问不畅时：请稍后重试，或向分享者索取离线 HTML 文件（本站支持 PWA 离线查看）。</div>
   </div>
 </footer>
@@ -511,7 +511,7 @@ document.addEventListener("click", e=>{
   if(!filtersEl.contains(e.target) && e.target.id !== "filterToggle") filtersEl.classList.remove("open");
 });
 
-document.getElementById("gen").textContent = "生成时间：" + "2026-11-28 16:42 · 台账共 102 条" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
+document.getElementById("gen").textContent = "生成时间：" + "2026-11-28 16:58 · 台账共 102 条" + " · 共 " + DATA.length + " 条 · 覆盖窗口 2026-10-26 至 2026-11-25";
 initSelects(); initNavCounts(); renderStats(sorted); render(); renderSocial();
 
 let deferredPrompt = null;
